@@ -24,6 +24,8 @@ dependencies:
 - random
 - JuicyPixels
 - containers
+- tasty
+- tasty-hunit
 
 library:
   source-dirs: src

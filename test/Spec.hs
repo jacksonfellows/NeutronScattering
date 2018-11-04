@@ -1,2 +1,10 @@
+module Main where
+
+import Test.Tasty
+
+import qualified Tests.Shapes
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = defaultMain $ testGroup "NeutronScattering"
+    [ Tests.Shapes.tests
+    ]

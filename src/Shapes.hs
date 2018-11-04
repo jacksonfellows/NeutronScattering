@@ -4,6 +4,8 @@ module Shapes
     ( Shape(..)
     , Intersection(..)
     , intersection
+    , solveQuadratic
+    , QuadraticSolution(..)
     ) where
 
 import Linear
@@ -18,7 +20,7 @@ data Shape = Sphere
     deriving (Show, Read, Eq, Ord)
 
 data QuadraticSolution = Roots Double Double | Root Double | None
-    deriving (Show, Read)
+    deriving (Show, Read, Eq)
 
 -- returns the roots of a quadratic equation
 -- in ascending order
