@@ -41,15 +41,15 @@ intersectionTests = testGroup "intersection" [intUnitTests, intPropertyTests]
 
 intUnitTests = testGroup "Unit Tests"
     [ testCase "No intersection" $
-        intersection upVec Sphere {center = V3 0 0 (-10), radius = 9} @?= Nothing
+        intersection upRay Sphere {center = V3 0 0 (-10), radius = 9} @?= Nothing
 
     , testCase "Inside Sphere" $
-        intersection upVec Sphere {center = V3 0 0 0, radius = 10} @?= Just Intersection {point = V3 0 0 10, distanceFrom = 10}
+        intersection upRay Sphere {center = V3 0 0 0, radius = 10} @?= Just Intersection {point = V3 0 0 10, distanceFrom = 10}
 
     , testCase "Outside Sphere" $
-        intersection upVec Sphere {center = V3 0 0 10, radius = 5} @?= Just Intersection {point = V3 0 0 5, distanceFrom = 5}
+        intersection upRay Sphere {center = V3 0 0 10, radius = 5} @?= Just Intersection {point = V3 0 0 5, distanceFrom = 5}
     ]
-    where upVec = Ray {origin = V3 0 0 0, dir = V3 0 0 1}
+    where upRay = Ray {origin = V3 0 0 0, dir = V3 0 0 1}
 
 -- TODO: I don't really understand what's best here
 
