@@ -5,6 +5,7 @@ module Scatter
     , Object(..)
     , closestIntersection
     , simulate
+    , Material(..)
     ) where
 
 import Shapes
@@ -18,10 +19,23 @@ data Neutron = Neutron
     { ray :: Ray Double }
     deriving (Show, Read)
 
+data Material = Air | Paraffin
+    deriving (Show, Read, Eq, Ord)
+
+-- 
+-- -- Units?
+-- sigmaElasticScattering :: Material -> Double
+-- sigmaElasticScattering Air = 0.1
+-- sigmaElasticScattering Paraffin = 0.1
+-- 
+-- sigmaTotal :: Material -> Double
+-- sigmaTotal Air = 0.1
+-- sigmaTotal Paraffin = 0.1
+
 -- TODO: it doesn't really make sense to "order" objects
 data Object = Object
     { shape :: Shape
-    , name :: String -- test
+    , material :: Material
     }
     deriving (Show, Read, Eq, Ord)
 
@@ -36,6 +50,7 @@ closestIntersection Neutron {ray} objs
 
 -- takes a neutron source and a scene (list of Objects)
 -- return a list of points and intensities, representing the path of a neutron
+-- TODO: should it update some sort of globally mutable state instead?
 simulate :: V3 Double -> [Object] -> IO [(V3 Double, Float)]
 simulate source scene = do
     dir <- randomDir
