@@ -1,3 +1,6 @@
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE RecordWildCards #-}
+
 module Tests.Shapes
     ( tests
     ) where
@@ -34,7 +37,7 @@ quadPropertyTests = testGroup "Property Tests"
         \eqa -> isAscending $ solveQuadratic (eqa :: (Double, Double, Double))
     ]
 
-intersectionTests = testGroup "intersection" [intUnitTests]
+intersectionTests = testGroup "intersection" [intUnitTests, intPropertyTests]
 
 intUnitTests = testGroup "Unit Tests"
     [ testCase "No intersection" $
@@ -47,3 +50,27 @@ intUnitTests = testGroup "Unit Tests"
         intersection upVec Sphere {center = V3 0 0 10, radius = 5} @?= Just Intersection {point = V3 0 0 5, distanceFrom = 5}
     ]
     where upVec = Ray {origin = V3 0 0 0, dir = V3 0 0 1}
+
+-- TODO: I don't really understand what's best here
+
+-- A ray and sphere guaranteed to intersect
+data GuaranteedIntersection = GuaranteedIntersection (Ray Double) Shape
+    deriving (Show)
+
+-- TODO: don't only generate rays pointed towards the center of the sphere
+instance QC.Arbitrary GuaranteedIntersection where
+    arbitrary = do
+        origin <- arbitrary
+        center <- arbitrary
+        Positive radius <- arbitrary
+        let dir = if center == origin then V3 0 0 1 else center - origin
+        return $ GuaranteedIntersection Ray {origin, dir} Sphere {center, radius}
+
+
+intPropertyTests = testGroup "Property Tests"
+    [ QC.testProperty "Rays and spheres constructed to intersect always do" $
+        \(GuaranteedIntersection ray sphere) -> intersection ray sphere /= Nothing
+
+    , QC.testProperty "distanceFrom = origin `distance` point" $
+        \(GuaranteedIntersection ray sphere) -> let Just Intersection {..} = intersection ray sphere in distanceFrom == (origin ray) `distance` point
+    ]

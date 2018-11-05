@@ -11,6 +11,7 @@ module Linear
 
 import Control.Applicative (liftA2)
 import System.Random (randomIO)
+import Test.Tasty.QuickCheck as QC
 
 data V3 a = V3 a a a
     deriving (Eq, Ord, Show, Read)
@@ -36,6 +37,12 @@ instance Num a => Num (V3 a) where
     negate = fmap negate
 
     fromInteger i = pure (fromInteger i)
+
+-- TODO: ugly
+instance QC.Arbitrary a => QC.Arbitrary (V3 a) where
+    arbitrary = do
+        (x,y,z) <- arbitrary
+        return $ V3 x y z
 
 -- dot product
 dot :: Num a => V3 a -> V3 a -> a
