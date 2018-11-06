@@ -55,10 +55,14 @@ simulate :: V3 Double -> [Object] -> IO [(V3 Double, Float)]
 simulate source scene = do
     dir <- randomDir
     let n = Neutron $ Ray source dir
-        int = closestIntersection n scene
+    points <- simulate' n scene
+    return points
+
+simulate' :: Neutron -> [Object] -> IO [(V3 Double, Float)]
+simulate' n scene = do
+    let int = closestIntersection n scene
         points = if int == Nothing
-                 then []
-                 else
-                    let Just ((Intersection pos _),_) = int in
-                    [(pos, 1)]
+                    then []
+                    else
+                    let Just ((Intersection pos _),_) = int in [(pos, 1)]
     return points
