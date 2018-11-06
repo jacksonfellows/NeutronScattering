@@ -28,8 +28,7 @@ main = do
     writePaths "paths.obj" source $ map (map fst) results
 
     let points = concat results
-        sourceVolume = addToVolume source 1 emptyVolume
         -- TODO: use strict left fold?
-        vol = foldl (\vol (pos, val) -> (addToVolume pos val vol)) sourceVolume points
+        vol = foldl (\vol (pos, val) -> (addToVolume pos val vol)) emptyVolume points
 -- 
     writeVolume 100 100 100 vol
