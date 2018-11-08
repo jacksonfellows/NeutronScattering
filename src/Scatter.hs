@@ -8,6 +8,8 @@ module Scatter
     , Material(..)
     ) where
 
+import qualified Data.HashTable.IO as H
+
 import Shapes
 import Linear
 import Volume
@@ -22,7 +24,6 @@ data Neutron = Neutron
 data Material = Air | Paraffin
     deriving (Show, Read, Eq, Ord)
 
--- 
 -- -- Units?
 -- sigmaElasticScattering :: Material -> Double
 -- sigmaElasticScattering Air = 0.1
@@ -48,21 +49,25 @@ closestIntersection Neutron {ray} objs
     where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\Object {shape} -> intersection ray shape) objs) objs
 
 
--- takes a neutron source and a scene (list of Objects)
--- return a list of points and intensities, representing the path of a neutron
--- TODO: should it update some sort of globally mutable state instead?
-simulate :: V3 Double -> [Object] -> IO [(V3 Double, Float)]
-simulate source scene = do
+-- takes a map to update
+-- along with a neutron source and a scene (list of Objects)
+simulate :: HashTable (Int, Int, Int) Float -> V3 Double -> [Object] -> IO ()
+simulate intensities source scene = do
     dir <- randomDir
     let n = Neutron $ Ray source dir
-    points <- simulate' n scene
-    return points
+    simulate' intensities n scene
 
-simulate' :: Neutron -> [Object] -> IO [(V3 Double, Float)]
-simulate' n scene = do
+-- TODO: ugly
+toKey :: V3 Double -> (Int, Int, Int)
+toKey (V3 x y z) = (floor x, floor y, floor z)
+
+-- simulate starting with a neutron
+simulate' :: HashTable (Int, Int, Int) Float -> Neutron -> [Object] -> IO ()
+simulate' intensities n scene = do
     let int = closestIntersection n scene
-        points = if int == Nothing
-                    then []
-                    else
-                    let Just ((Intersection pos _),_) = int in [(pos, 1)]
-    return points
+    if int == Nothing
+    then do return () -- TODO: ugly
+    else do
+        let (Just (i,_)) = int
+            p = toKey $ point i
+        H.insert intensities p 0.5

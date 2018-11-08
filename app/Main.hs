@@ -2,6 +2,7 @@ module Main where
 
 import Control.Monad (replicateM)
 import System.Random (mkStdGen, setStdGen)
+import qualified Data.HashTable.IO as H
 
 import Linear
 import Paths
@@ -23,12 +24,10 @@ main :: IO ()
 main = do
     setStdGen $ mkStdGen 871
 
-    results <- replicateM 1000 $ simulate source scene
+    -- TODO: should it be Int?
+    intensities <- H.new :: IO (HashTable (Int, Int, Int) Float)
+    results <- replicateM 1000000 $ simulate intensities source scene
 
-    writePaths "paths.obj" source $ map (map fst) results
+    -- writePaths "paths.obj" source $ map (map fst) results
 
-    let points = concat results
-        -- TODO: use strict left fold?
-        vol = foldl (\vol (pos, val) -> (addToVolume pos val vol)) emptyVolume points
--- 
-    writeVolume 100 100 100 vol
+    writeVolume intensities (100,100,100)
