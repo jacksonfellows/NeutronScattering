@@ -9,18 +9,7 @@ module Shapes
     ) where
 
 import           Linear
-
--- TODO parametrize these types?
-
--- TODO: shapes are meshes with bounding boxes?
-data Shape = Sphere
-    { center :: V3 Double
-    , radius :: Double
-    }
-    deriving (Show, Read, Eq, Ord)
-
-data QuadraticSolution = Roots Double Double | Root Double | None
-    deriving (Show, Read, Eq)
+import           Types
 
 -- returns the roots of a quadratic equation
 -- in ascending order
@@ -37,16 +26,6 @@ solveQuadratic (a, b, c)
         in if r0 < r1 then Roots r0 r1 else Roots r1 r0
     where
         discriminant = b*b - 4*a*c
-
-data Intersection = Intersection
-    { point        :: V3 Double
-    , distanceFrom :: Double
-    }
-    deriving (Show, Eq, Read)
-
--- Intersections can be ordered based on closeness
-instance Ord Intersection where
-    (Intersection _ a) <= (Intersection _ b) = a <= b
 
 intersection :: Ray Double -> Shape -> Maybe Intersection
 intersection ray@(Ray {origin, dir}) Sphere {center, radius}

@@ -4,10 +4,11 @@ import           Control.Monad     (replicateM)
 import qualified Data.HashTable.IO as H
 import           System.Random     (mkStdGen, setStdGen)
 
-import           Paths
 import           Linear
+import           Paths
 import           Scatter
 import           Shapes
+import           Types
 import           Volume
 
 source = V3 50 50 50

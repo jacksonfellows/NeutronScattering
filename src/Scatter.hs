@@ -19,19 +19,6 @@ import           Volume
 -- lifts a normal maybe value into MaybeT
 liftMaybe = MaybeT . return
 
--- TODO: parametrize these types?
--- TODO: move all types to separate file?
-
--- is the energy the magnitude of the direction?
-data Neutron = Neutron
-    { ray    :: Ray Double
-    , inside :: Maybe Object
-    }
-    deriving (Show, Read)
-
-data Material = Air | Paraffin
-    deriving (Show, Read, Eq, Ord)
-
 -- Units? Real values?
 sigmaElasticScattering :: Material -> Double
 sigmaElasticScattering Air      = 0
@@ -40,13 +27,6 @@ sigmaElasticScattering Paraffin = 0.2
 sigmaTotal :: Material -> Double
 sigmaTotal Air      = 0
 sigmaTotal Paraffin = 0.1
-
--- TODO: it doesn't really make sense to "order" objects
-data Object = Object
-    { shape    :: Shape
-    , material :: Material
-    }
-    deriving (Show, Read, Eq, Ord)
 
 -- TODO: looks god-awful
 -- TODO: rewrite using Maybe monad?
