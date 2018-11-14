@@ -56,6 +56,14 @@ closestIntersection Neutron {ray} objs
     | otherwise = let (Just int,obj) = minimum ints in Just (int,obj)
         where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\Object {shape} -> intersection ray shape) objs) objs
 
+getIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
+getIntersection n@(Neutron {ray, inside}) objs
+    | inside == Nothing = closestIntersection n objs -- outside of all objects
+    | otherwise = do
+        obj <- inside
+        int <- intersection ray (shape obj)
+        return (int,obj)
+
 -- assuming that we are starting outside of all the objects in the scene
 simulate :: HashTable (Int, Int, Int) Float -- map to update
          -> V3 Double -- source
@@ -78,9 +86,9 @@ simulate' :: HashTable (Int, Int, Int) Float -- map to update
           -> MaybeT IO Int -- (possible) updates to the map along with number of collisions (or steps)
 simulate' intensities n scene = do
     -- find the intersection and object intersected
-    (int,obj) <- liftMaybe $ closestIntersection n scene
-        -- Just obj -> do
-            -- int <- liftMaybe $ intersection (ray n) (shape obj)
+    (int,obj) <- liftMaybe $ getIntersection n scene
+
+    -- get the collision based on the intersection and the material
 
     lift $ print "hit something!"
     lift $ H.insert intensities (toKey (point int)) 0.5

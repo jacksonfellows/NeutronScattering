@@ -22,7 +22,7 @@ scene =
 
 main :: IO ()
 main = do
-    setStdGen $ mkStdGen 871
+    -- setStdGen $ mkStdGen 871
 
     -- TODO: should it be Int?
     intensities <- H.new :: IO (HashTable (Int, Int, Int) Float)
