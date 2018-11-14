@@ -2,19 +2,24 @@
 
 module Scatter
     ( Neutron(..)
-    , Object(..)
-    , closestIntersection
-    , simulate
     , Material(..)
+    , Object(..)
+    , simulate
     ) where
 
 import qualified Data.HashTable.IO as H
+import Control.Monad.Trans.Class
+import Control.Monad.Trans.Maybe
 
 import Shapes
 import Linear
 import Volume
 
--- TODO parametrize these types?
+-- lifts a normal maybe value into MaybeT
+liftMaybe = MaybeT . return
+
+-- TODO: parametrize these types?
+-- TODO: move all types to separate file?
 
 -- is the energy the magnitude of the direction?
 data Neutron = Neutron
@@ -42,50 +47,46 @@ data Object = Object
     }
     deriving (Show, Read, Eq, Ord)
 
--- are we assuming that the neutron is outside of all objects in the scene?
+-- TODO: looks god-awful
+-- TODO: rewrite using Maybe monad?
 -- returns the intersection along with the object intersected
 closestIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
 closestIntersection Neutron {ray} objs
     | null ints = Nothing
     | otherwise = let (Just int,obj) = minimum ints in Just (int,obj)
-    where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\Object {shape} -> intersection ray shape) objs) objs
+        where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\Object {shape} -> intersection ray shape) objs) objs
 
-
--- takes a map to update
--- along with a neutron source and a scene (list of Objects)
-simulate :: HashTable (Int, Int, Int) Float -> V3 Double -> [Object] -> IO ()
+-- assuming that we are starting outside of all the objects in the scene
+simulate :: HashTable (Int, Int, Int) Float -- map to update
+         -> V3 Double -- source
+         -> [Object] -- scene
+         -> IO () -- updates to the map
 simulate intensities source scene = do
     dir <- randomDir
-    let n = Neutron $ Ray source dir
-    simulate' intensities n scene
+    let n = Neutron {ray = Ray source dir, inside = Nothing}
 
--- TODO: ugly
-toKey :: V3 Double -> (Int, Int, Int)
-toKey (V3 x y z) = (floor x, floor y, floor z)
+    num <- runMaybeT $ simulate' intensities n scene
+    case num of
+        Nothing -> return () -- print "no collisions :("
+        Just n -> print $ "had " ++ (show n) ++ " collision(s) :)"
 
--- collide a neutron with the scene
-collideOutside :: HashTable (Int, Int, Int) -> Neutron -> [Object] -> IO (Maybe newN)
-collideOutside intensities n scene = do
-    let intPair = closestIntersection n scene
-    if intPair == Nothing
-    then do return ()
-    else do
-        let Just (int,obj) = intPair
-        collide
-
--- collide a neutron with the object it is inside
-collideInside :: HashTable (Int, Int, Int) -> Neutron -> IO (Maybe newN)
-
--- simulate starting with a neutron
-simulate' :: HashTable (Int, Int, Int) Float -> Neutron -> [Object] -> IO ()
+-- TODO: return MaybeT IO ()? Would this allow us to use Maybe monad to skip no intersections?
+-- the neutron can start anywhere
+simulate' :: HashTable (Int, Int, Int) Float -- map to update
+          -> Neutron -- neutron
+          -> [Object] -- scene
+          -> MaybeT IO Int -- (possible) updates to the map along with number of collisions (or steps)
 simulate' intensities n scene = do
-    -- TODO: very ugly
-    if (inside n) == Nothing
-    then do
-        newN <- collideOutside intensities n scene
-    else do
-        newN <- collideInside intensities n
+    -- find the intersection and object intersected
+    (int,obj) <- liftMaybe $ closestIntersection n scene
+        -- Just obj -> do
+            -- int <- liftMaybe $ intersection (ray n) (shape obj)
 
-    if newN == Nothing
-    then do return ()
-    else do simulate' intensities newN scene
+    lift $ print "hit something!"
+    lift $ H.insert intensities (toKey (point int)) 0.5
+
+    return 1
+
+-- convert a point to a key
+toKey :: V3 Double -> (Int, Int, Int)
+toKey v = let (V3 x y z) = fmap floor v in (x, y, z)
