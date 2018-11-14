@@ -1,14 +1,14 @@
 module Main where
 
-import Control.Monad (replicateM)
-import System.Random (mkStdGen, setStdGen)
+import           Control.Monad     (replicateM)
 import qualified Data.HashTable.IO as H
+import           System.Random     (mkStdGen, setStdGen)
 
-import Linear
-import Paths
-import Scatter
-import Shapes
-import Volume
+import           Paths
+import           Linear
+import           Scatter
+import           Shapes
+import           Volume
 
 source = V3 50 50 50
 scene =

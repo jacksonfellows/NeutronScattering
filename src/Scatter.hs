@@ -7,13 +7,14 @@ module Scatter
     , simulate
     ) where
 
-import qualified Data.HashTable.IO as H
-import Control.Monad.Trans.Class
-import Control.Monad.Trans.Maybe
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Maybe
+import qualified Data.HashTable.IO         as H
 
-import Shapes
-import Linear
-import Volume
+import           Linear
+import           Shapes
+import           Types
+import           Volume
 
 -- lifts a normal maybe value into MaybeT
 liftMaybe = MaybeT . return
@@ -23,7 +24,7 @@ liftMaybe = MaybeT . return
 
 -- is the energy the magnitude of the direction?
 data Neutron = Neutron
-    { ray :: Ray Double
+    { ray    :: Ray Double
     , inside :: Maybe Object
     }
     deriving (Show, Read)
@@ -33,16 +34,16 @@ data Material = Air | Paraffin
 
 -- Units? Real values?
 sigmaElasticScattering :: Material -> Double
-sigmaElasticScattering Air = 0
+sigmaElasticScattering Air      = 0
 sigmaElasticScattering Paraffin = 0.2
 
 sigmaTotal :: Material -> Double
-sigmaTotal Air = 0
+sigmaTotal Air      = 0
 sigmaTotal Paraffin = 0.1
 
 -- TODO: it doesn't really make sense to "order" objects
 data Object = Object
-    { shape :: Shape
+    { shape    :: Shape
     , material :: Material
     }
     deriving (Show, Read, Eq, Ord)
@@ -76,7 +77,7 @@ simulate intensities source scene = do
     num <- runMaybeT $ simulate' intensities n scene
     case num of
         Nothing -> return () -- print "no collisions :("
-        Just n -> print $ "had " ++ (show n) ++ " collision(s) :)"
+        Just n  -> print $ "had " ++ (show n) ++ " collision(s) :)"
 
 -- TODO: return MaybeT IO ()? Would this allow us to use Maybe monad to skip no intersections?
 -- the neutron can start anywhere

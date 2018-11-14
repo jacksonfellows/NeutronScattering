@@ -3,12 +3,12 @@ module Volume
     , writeVolume
     ) where
 
-import Codec.Picture
-import Text.Printf (printf)
+import           Codec.Picture
 import qualified Data.HashTable.IO as H
-import System.IO.Unsafe (unsafePerformIO)
+import           System.IO.Unsafe  (unsafePerformIO)
+import           Text.Printf       (printf)
 
-import Linear
+import           Linear
 
 type HashTable k v = H.CuckooHashTable k v
 

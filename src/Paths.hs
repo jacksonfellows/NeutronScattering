@@ -2,10 +2,10 @@ module Paths
     ( writePaths
     ) where
 
-import Text.Printf (printf)
-import Data.List (intercalate)
+import           Data.List   (intercalate)
+import           Text.Printf (printf)
 
-import Linear
+import           Linear
 
 writePaths :: String -> V3 Double -> [[(V3 Double)]] -> IO ()
 writePaths filename source paths = writeFile filename $ writeVertex source ++ writePaths' 2 paths

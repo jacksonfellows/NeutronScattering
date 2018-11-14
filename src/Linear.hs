@@ -9,9 +9,9 @@ module Linear
     , pointOnRay
     ) where
 
-import Control.Applicative (liftA2)
-import System.Random (randomIO)
-import Test.Tasty.QuickCheck as QC
+import           Control.Applicative   (liftA2)
+import           System.Random         (randomIO)
+import           Test.Tasty.QuickCheck as QC
 
 data V3 a = V3 a a a
     deriving (Eq, Ord, Show, Read)

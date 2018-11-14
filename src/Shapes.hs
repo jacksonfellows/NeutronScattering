@@ -8,7 +8,7 @@ module Shapes
     , QuadraticSolution(..)
     ) where
 
-import Linear
+import           Linear
 
 -- TODO parametrize these types?
 
@@ -39,7 +39,7 @@ solveQuadratic (a, b, c)
         discriminant = b*b - 4*a*c
 
 data Intersection = Intersection
-    { point :: V3 Double
+    { point        :: V3 Double
     , distanceFrom :: Double
     }
     deriving (Show, Eq, Read)
