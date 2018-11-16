@@ -10,7 +10,6 @@ import qualified Data.HashTable.IO as H
 import           System.IO.Unsafe  (unsafePerformIO)
 import           Text.Printf       (printf)
 
-import           Linear
 
 type HashTable k v = H.CuckooHashTable k v
 

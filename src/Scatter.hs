@@ -10,9 +10,9 @@ module Scatter
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
 import qualified Data.HashTable.IO         as H
+import           Data.Vec3
 import           System.Random             (randomRIO)
 
-import           Linear
 import           Shapes
 import           Types
 import           Volume
@@ -48,7 +48,7 @@ getIntersection n@(Neutron {ray, inside}) objs
 
 -- assuming that we are starting outside of all the objects in the scene
 simulate :: HashTable (Int, Int, Int) Float -- map to update
-         -> V3 Double -- source
+         -> CVec3 -- source
          -> [Object] -- scene
          -> IO () -- updates to the map
 simulate intensities source scene = do
@@ -91,7 +91,7 @@ simulate' intensities n scene = do
         -- scattering
         then do
             -- lift $ putStrLn "- scattering"
-            lift $ H.insert intensities (toKey colPoint) 0.5 -- TODO: actual intensity
+            lift $ H.insert intensities (toKey colPoint) 0.1 -- TODO: actual intensity
 
             newDir <- lift $ randomDir -- TODO: actual new direction
             let newN = Neutron {ray = Ray colPoint newDir, inside = (inside n)}
@@ -100,7 +100,7 @@ simulate' intensities n scene = do
         -- absorbed
         else do
             -- lift $ putStrLn "- absorbed"
-            lift $ H.insert intensities (toKey colPoint) 1 -- TODO: actual intensity
+            lift $ H.insert intensities (toKey colPoint) 0.1 -- TODO: actual intensity
     -- move into next object
     else do
         -- lift $ putStrLn "moving into next object"
@@ -110,5 +110,5 @@ simulate' intensities n scene = do
         simulate' intensities newN scene
 
 -- convert a point to a key
-toKey :: V3 Double -> (Int, Int, Int)
-toKey v = let (V3 x y z) = fmap floor v in (x, y, z)
+toKey :: CVec3 -> (Int, Int, Int)
+toKey v = let (x, y, z) = toXYZ v in (floor x, floor y, floor z)

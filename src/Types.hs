@@ -1,5 +1,8 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 module Types
     ( Neutron(..)
+    , Ray(..)
     , Object(..)
     , Material(..)
     , Shape(..)
@@ -7,42 +10,49 @@ module Types
     , Intersection(..)
     ) where
 
-import           Linear
+import           Data.Vec3 hiding (origin)
 
 -- TODO: parametrize these types?
 
 -- is the energy the magnitude of the direction?
 data Neutron = Neutron
-    { ray    :: Ray Double
+    { ray    :: Ray
     , inside :: Maybe Object
     }
-    deriving (Show, Read)
+    deriving (Show)
 
--- TODO: it doesn't really make sense to "order" objects
+data Ray = Ray
+    { origin, dir :: CVec3 }
+    deriving (Show)
+
 data Object = Object
     { shape    :: Shape
     , material :: Material
     }
-    deriving (Show, Read, Eq, Ord)
+    deriving (Show, Eq)
+
+-- TODO: it doesn't really make sense to "order" objects
+instance Ord Object where
+    _ `compare` _ = EQ
 
 data Material = Air | Paraffin
-    deriving (Show, Read, Eq, Ord)
+    deriving (Show, Eq, Ord)
 
 -- TODO: shapes are meshes with bounding boxes?
 data Shape = Sphere
-    { center :: V3 Double
+    { center :: CVec3
     , radius :: Double
     }
-    deriving (Show, Read, Eq, Ord)
+    deriving (Show, Eq)
 
 data QuadraticSolution = Roots Double Double | Root Double | None
-    deriving (Show, Read, Eq)
+    deriving (Show, Eq)
 
 data Intersection = Intersection
-    { point        :: V3 Double
+    { point        :: CVec3
     , distanceFrom :: Double
     }
-    deriving (Show, Eq, Read)
+    deriving (Show, Eq)
 
 -- Intersections can be ordered based on closeness
 instance Ord Intersection where

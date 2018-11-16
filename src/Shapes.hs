@@ -6,10 +6,28 @@ module Shapes
     , intersection
     , solveQuadratic
     , QuadraticSolution(..)
+    , pointOnRay
+    , randomDir
     ) where
 
-import           Linear
+import           Data.Vec3     hiding (origin)
+import           System.Random (randomIO)
+
 import           Types
+
+-- TODO: this really shouldn't be here
+pointOnRay :: Ray -> Double -> CVec3
+pointOnRay Ray {origin, dir} n = origin <+> (norm .^ n)
+    where norm = normalize dir
+
+-- neither should this
+randomDir :: IO CVec3
+randomDir = do
+    r0 <- randomIO :: IO Double
+    r1 <- randomIO :: IO Double
+    let theta = r0 * 2 * pi
+        phi = acos $ r1 * 2 - 1
+    return $ CVec3 (cos theta * sin phi) (sin theta * sin phi) (cos phi)
 
 -- returns the roots of a quadratic equation
 -- in ascending order
@@ -27,16 +45,16 @@ solveQuadratic (a, b, c)
     where
         discriminant = b*b - 4*a*c
 
-intersection :: Ray Double -> Shape -> Maybe Intersection
+intersection :: Ray -> Shape -> Maybe Intersection
 intersection ray@(Ray {origin, dir}) Sphere {center, radius}
     | None <- solution = Nothing
     | (Root t) <- solution = ans t
     | (Roots t0 t1) <- solution = ans $ if t0 < 0 then t1 else t0
     where
-        l = origin - center
-        a = dir `dot` dir
-        b = 2 * dir `dot` l
-        c = l `dot` l - radius**2
+        l = origin <-> center
+        a = dir .* dir
+        b = 2 * dir .* l
+        c = l .* l - radius**2
         solution = solveQuadratic (a, b, c)
         ans t = if t > 0
                 then let p = (pointOnRay ray t) in Just $ Intersection p $ origin `distance` p

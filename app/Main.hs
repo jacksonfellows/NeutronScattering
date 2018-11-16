@@ -3,20 +3,19 @@ module Main where
 import           Control.Monad     (replicateM)
 import qualified Data.HashTable.IO as H
 import           System.Random     (mkStdGen, setStdGen)
+import Data.Vec3
 
-import           Linear
-import           Paths
 import           Scatter
 import           Shapes
 import           Types
 import           Volume
 
-source = V3 50 50 50
+source = CVec3 50 50 50
 scene =
-    [ Object { shape = Sphere (V3 50 50 70) 10
+    [ Object { shape = Sphere (CVec3 50 50 70) 10
              , material = Paraffin
              }
-    , Object { shape = Sphere (V3 50 50 30) 10
+    , Object { shape = Sphere (CVec3 50 50 30) 10
              , material = Paraffin
              }
     ]
