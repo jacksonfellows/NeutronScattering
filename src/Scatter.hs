@@ -10,6 +10,7 @@ module Scatter
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
 import qualified Data.HashTable.IO         as H
+import           System.Random             (randomRIO)
 
 import           Linear
 import           Shapes
@@ -20,13 +21,13 @@ import           Volume
 liftMaybe = MaybeT . return
 
 -- Units? Real values?
-sigmaElasticScattering :: Material -> Double
-sigmaElasticScattering Air      = 0
-sigmaElasticScattering Paraffin = 0.2
+getSigmaElasticScattering :: Material -> Double
+getSigmaElasticScattering Air      = 0
+getSigmaElasticScattering Paraffin = 0.2
 
-sigmaTotal :: Material -> Double
-sigmaTotal Air      = 0
-sigmaTotal Paraffin = 0.1
+getSigmaTotal :: Material -> Double
+getSigmaTotal Air      = 0
+getSigmaTotal Paraffin = 1
 
 -- TODO: looks god-awful
 -- TODO: rewrite using Maybe monad?
@@ -54,27 +55,54 @@ simulate intensities source scene = do
     dir <- randomDir
     let n = Neutron {ray = Ray source dir, inside = Nothing}
 
-    num <- runMaybeT $ simulate' intensities n scene
-    case num of
-        Nothing -> return () -- print "no collisions :("
-        Just n  -> print $ "had " ++ (show n) ++ " collision(s) :)"
+    -- TODO: ugly
+    putStrLn "neutron:"
+    nil <- runMaybeT $ simulate' intensities n scene
+    return ()
 
--- TODO: return MaybeT IO ()? Would this allow us to use Maybe monad to skip no intersections?
 -- the neutron can start anywhere
 simulate' :: HashTable (Int, Int, Int) Float -- map to update
           -> Neutron -- neutron
           -> [Object] -- scene
-          -> MaybeT IO Int -- (possible) updates to the map along with number of collisions (or steps)
+          -> MaybeT IO () -- (possible) updates to the
 simulate' intensities n scene = do
     -- find the intersection and object intersected
     (int,obj) <- liftMaybe $ getIntersection n scene
 
     -- get the collision based on the intersection and the material
+    let mat = material obj
+        sigmaScat = getSigmaElasticScattering mat
+        sigmaTot = getSigmaTotal mat
 
-    lift $ print "hit something!"
-    lift $ H.insert intensities (toKey (point int)) 0.5
+    r0 <- lift $ randomRIO (0,1) -- between 0 and 1?
+    let distanceCovered = -(1 / sigmaTot) * log r0
 
-    return 1
+    if distanceCovered < (distanceFrom int)
+    -- there was a collision
+    then do
+        lift $ putStrLn "collision"
+        let colPoint = pointOnRay (ray n) distanceCovered
+        r1 <- lift $ randomRIO (0,1) -- between 0 and 1?
+
+        if (sigmaScat / sigmaTot) > r1
+        -- scattering
+        then do
+            lift $ putStrLn "- scattering"
+            lift $ H.insert intensities (toKey colPoint) 0.5 -- TODO: actual intensity
+
+            newDir <- lift $ randomDir -- TODO: actual new direction
+            let newN = Neutron {ray = Ray colPoint newDir, inside = (inside n)}
+
+            simulate' intensities newN scene
+        -- absorbed
+        else do
+            lift $ putStrLn "- absorbed"
+            lift $ H.insert intensities (toKey colPoint) 1 -- TODO: actual intensity
+    -- move into next object
+    else do
+        lift $ putStrLn "moving into next object"
+        let newN = Neutron {ray = Ray (point int) (dir (ray n)), inside = Just obj}
+        simulate' intensities newN scene
 
 -- convert a point to a key
 toKey :: V3 Double -> (Int, Int, Int)
