@@ -27,9 +27,9 @@ main = do
 
     -- TODO: should it be Int?
     intensities <- H.new :: IO (HashTable (Int, Int, Int) Float)
-    replicateM 100 $ simulate intensities source scene
+    replicateM 1000000 $ simulate intensities source scene
 
-    dumpHashTable intensities
+    -- dumpHashTable intensities
 
     -- TODO: make writePaths work again
     -- writePaths "paths.obj" source $ map (map fst) results

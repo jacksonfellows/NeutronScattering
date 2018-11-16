@@ -1,0 +1,430 @@
+	Thu Nov 08 09:41 2018 Time and Allocation Profiling Report  (Final)
+
+	   NeutronScattering-exe.EXE +RTS -N -p -RTS
+
+	total time  =      140.18 secs   (560712 ticks @ 1000 us, 4 processors)
+	total alloc = 396,955,713,472 bytes  (excludes profiling overheads)
+
+COST CENTRE                MODULE        SRC                                %time %alloc
+
+fmap                       Linear        src\Linear.hs:20:5-44               15.9   23.6
+stdNext                    System.Random System\Random.hs:(518,1)-(528,64)   10.0   10.4
+randomIvalInteger.f        System.Random System\Random.hs:(486,8)-(489,76)    6.2    3.0
+randomIvalInteger          System.Random System\Random.hs:(468,1)-(489,76)    6.0    3.9
+randomIvalInteger.f.v'     System.Random System\Random.hs:489:25-76           5.3    5.0
+<*>                        Linear        src\Linear.hs:28:5-52                4.7    8.8
+magnitude                  Linear        src\Linear.hs:57:1-37                4.0    5.2
+collideInside              Scatter       src\Scatter.hs:(127,1)-(148,81)      3.3    2.1
+intersection               Shapes        src\Shapes.hs:(52,1)-(64,28)         3.3    0.0
+collideOutside             Scatter       src\Scatter.hs:(103,1)-(123,78)      3.1    2.5
+foldr                      Linear        src\Linear.hs:24:5-44                3.0    2.7
+getStdRandom               System.Random System\Random.hs:(586,1)-(587,26)    2.8    2.5
+-                          Linear        src\Linear.hs:32:5-20                2.5    4.4
+randomIvalInteger.k        System.Random System\Random.hs:482:8-20            2.2    2.0
+collide                    Scatter       src\Scatter.hs:(73,1)-(97,22)        2.2    0.0
+solveQuadratic             Shapes        src\Shapes.hs:(28,1)-(39,34)         1.7    1.7
+distance                   Linear        src\Linear.hs:59:1-32                1.5    1.7
+next                       System.Random System\Random.hs:218:3-17            1.5    1.4
+simulate'                  Scatter       src\Scatter.hs:(152,1)-(160,40)      1.5    0.2
+randomIvalInteger.magtgt   System.Random System\Random.hs:483:8-21            1.5    1.3
+pointOnRay                 Linear        src\Linear.hs:76:1-50                1.3    3.5
+intersection.c             Shapes        src\Shapes.hs:60:9-33                1.3    0.0
+intersection.ans           Shapes        src\Shapes.hs:(62,9)-(64,28)         1.2    3.5
+closestIntersection.ints   Scatter       src\Scatter.hs:52:11-118             1.1    1.0
+closestIntersection.ints.\ Scatter       src\Scatter.hs:52:85-106             1.0    0.9
+closestIntersection        Scatter       src\Scatter.hs:(49,1)-(52,118)       0.9    1.4
++                          Linear        src\Linear.hs:31:5-20                0.7    1.6
+
+
+                                                                                                                                                                                          individual      inherited
+COST CENTRE                               MODULE                                             SRC                                                                      no.      entries  %time %alloc   %time %alloc
+
+MAIN                                      MAIN                                               <built-in>                                                               4477          0    0.0    0.0   100.0  100.0
+ CAF                                      GHC.Integer.Type                                   <entire-module>                                                          8953          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.IO.Encoding.CodePage                           <entire-module>                                                          8943          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.IO.Encoding                                    <entire-module>                                                          8936          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.Conc.Windows                                   <entire-module>                                                          8932          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.TopHandler                                     <entire-module>                                                          8928          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.IO.Handle.FD                                   <entire-module>                                                          8912          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.IO.Exception                                   <entire-module>                                                          8911          0    0.0    0.0     0.0    0.0
+ CAF:$dmrandomIO3                         System.Random                                      <no location info>                                                       5098          0    0.0    0.0     0.0    0.0
+  getTime                                 System.Random                                      System\Random.hs:(131,1)-(134,60)                                        8959          1    0.0    0.0     0.0    0.0
+ CAF:$fHashTableHashTable_$cnew           Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:131:5-7                                  5195          0    0.0    0.0     0.0    0.0
+  new                                     Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:131:5-25                                 8962          1    0.0    0.0     0.0    0.0
+ CAF:$fHashable1Fixed_$chash              Data.Hashable.Class                                Data\Hashable\Class.hs:311:5-8                                           5257          0    0.0    0.0     0.0    0.0
+  hash                                    Data.Hashable.Class                                Data\Hashable\Class.hs:311:5-13                                          9183          1    0.0    0.0     0.0    0.0
+ CAF:$fHashable1Fixed_$chashWithSalt1     Data.Hashable.Class                                Data\Hashable\Class.hs:312:5-16                                          5301          0    0.0    0.0     0.0    0.0
+  hashWithSalt                            Data.Hashable.Class                                Data\Hashable\Class.hs:312:5-38                                          9180          1    0.0    0.0     0.0    0.0
+ CAF:$fRandomDouble1                      System.Random                                      <no location info>                                                       5174          0    0.0    0.0     0.0    0.0
+  randomIO                                System.Random                                      System\Random.hs:326:3-40                                                8986          1    0.0    0.0     0.0    0.0
+   getStdRandom                           System.Random                                      System\Random.hs:(586,1)-(587,26)                                        8987          1    0.0    0.0     0.0    0.0
+ CAF:$fRandomDouble_twoto53               System.Random                                      System\Random.hs:417:5-11                                                5173          0    0.0    0.0     0.0    0.0
+  random                                  System.Random                                      System\Random.hs:(410,3)-(418,24)                                        9039          0    0.0    0.0     0.0    0.0
+   random.twoto53                         System.Random                                      System\Random.hs:417:5-38                                                9040          1    0.0    0.0     0.0    0.0
+ CAF:$fRandomGenStdGen_$cnext             System.Random                                      System\Random.hs:218:3-6                                                 5097          0    0.0    0.0     0.0    0.0
+  next                                    System.Random                                      System\Random.hs:218:3-17                                                9005          1    0.0    0.0     0.0    0.0
+ CAF:b_rlkc                               System.Random                                      System\Random.hs:473:8                                                   5107          0    0.0    0.0     0.0    0.0
+  randomIvalInteger                       System.Random                                      System\Random.hs:(468,1)-(489,76)                                        9033          0    0.0    0.0     0.0    0.0
+   randomIvalInteger.b                    System.Random                                      System\Random.hs:473:8-54                                                9034          1    0.0    0.0     0.0    0.0
+ CAF:cacheLineIntBits                     Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:66:1-16                             5256          0    0.0    0.0     0.0    0.0
+  cacheLineIntBits                        Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:66:1-52                             9192          1    0.0    0.0     0.0    0.0
+   log2                                   Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:(292,1)-(295,37)                    9193          1    0.0    0.0     0.0    0.0
+    log2.go                               Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:(294,5)-(295,37)                    9195          7    0.0    0.0     0.0    0.0
+ CAF:cacheLineIntBits1                    Data.HashTable.Internal.Utils                      <no location info>                                                       5255          0    0.0    0.0     0.0    0.0
+  cacheLineIntBits                        Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:66:1-52                             9194          0    0.0    0.0     0.0    0.0
+ CAF:cacheLineSize                        Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:48:1-13                             5248          0    0.0    0.0     0.0    0.0
+  cacheLineSize                           Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:48:1-18                             8967          1    0.0    0.0     0.0    0.0
+ CAF:cacheLineSize                        Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:80:1-13                          5209          0    0.0    0.0     0.0    0.0
+  cacheLineSize                           Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:80:1-18                          8976          1    0.0    0.0     0.0    0.0
+ CAF:ds_rlk8                              System.Random                                      <no location info>                                                       5103          0    0.0    0.0     0.0    0.0
+  randomIvalInteger                       System.Random                                      System\Random.hs:(468,1)-(489,76)                                        9029          0    0.0    0.0     0.0    0.0
+   randomIvalInteger.(...)                System.Random                                      System\Random.hs:472:8-36                                                9030          1    0.0    0.0     0.0    0.0
+    genRange                              System.Random                                      System\Random.hs:219:3-23                                                9031          1    0.0    0.0     0.0    0.0
+ CAF:elemMask                             Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:69:1-8                           5208          0    0.0    0.0     0.0    0.0
+  elemMask                                Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:69:1-17                          9200          1    0.0    0.0     0.0    0.0
+ CAF:emptyMarker                          Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:785:1-11                                 5197          0    0.0    0.0     0.0    0.0
+  emptyMarker                             Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:785:1-15                                 9203          1    0.0    0.0     0.0    0.0
+ CAF:genhi_rlkb                           System.Random                                      System\Random.hs:472:16-20                                               5106          0    0.0    0.0     0.0    0.0
+  randomIvalInteger                       System.Random                                      System\Random.hs:(468,1)-(489,76)                                        9035          0    0.0    0.0     0.0    0.0
+   randomIvalInteger.genhi                System.Random                                      System\Random.hs:472:8-36                                                9036          1    0.0    0.0     0.0    0.0
+ CAF:genlo_rlk9                           System.Random                                      System\Random.hs:472:9-13                                                5104          0    0.0    0.0     0.0    0.0
+  randomIvalInteger                       System.Random                                      System\Random.hs:(468,1)-(489,76)                                        9027          0    0.0    0.0     0.0    0.0
+   randomIvalInteger.genlo                System.Random                                      System\Random.hs:472:8-36                                                9028          1    0.0    0.0     0.0    0.0
+ CAF:hashPrime                            Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:752:1-9                                  5196          0    0.0    0.0     0.0    0.0
+  hashPrime                               Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:(752,1)-(755,36)                         9189          1    0.0    0.0     0.0    0.0
+   hashPrime.hashPrime64                  Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:755:5-36                                 9191          1    0.0    0.0     0.0    0.0
+ CAF:lvl39_rtXV                           Scatter                                            <no location info>                                                       4568          0    0.0    0.0     0.0    0.0
+  hashWithSalt                            Data.Hashable.Class                                Data\Hashable\Class.hs:519:5-32                                          9171          1    0.0    0.0     0.0    0.0
+   hashWithSalt1                          Data.Hashable.Class                                Data\Hashable\Class.hs:269:1-45                                          9172          1    0.0    0.0     0.0    0.0
+    liftHashWithSalt                      Data.Hashable.Class                                Data\Hashable\Class.hs:522:5-46                                          9173          1    0.0    0.0     0.0    0.0
+     defaultLiftHashWithSalt              Data.Hashable.Class                                Data\Hashable\Class.hs:281:1-60                                          9174          1    0.0    0.0     0.0    0.0
+ CAF:lvl7_rlka                            System.Random                                      <no location info>                                                       5105          0    0.0    0.0     0.0    0.0
+  randomIvalInteger                       System.Random                                      System\Random.hs:(468,1)-(489,76)                                        9024          0    0.0    0.0     0.0    0.0
+   randomIvalInteger.f                    System.Random                                      System\Random.hs:(486,8)-(489,76)                                        9025          0    0.0    0.0     0.0    0.0
+    randomIvalInteger.f.v'                System.Random                                      System\Random.hs:489:25-76                                               9026          0    0.0    0.0     0.0    0.0
+ CAF:main1                                Main                                               <no location info>                                                       4487          0    0.0    0.0     0.0    0.0
+  main                                    Main                                               app\Main.hs:(24,1)-(34,41)                                               8954          1    0.0    0.0     0.0    0.0
+ CAF:main_sgen                            Main                                               <no location info>                                                       4486          0    0.0    0.0     0.0    0.0
+  main                                    Main                                               app\Main.hs:(24,1)-(34,41)                                               9007          0    0.0    0.0     0.0    0.0
+   mkStdGen                               System.Random                                      System\Random.hs:259:1-40                                                9008          1    0.0    0.0     0.0    0.0
+    mkStdGen32                            System.Random                                      System\Random.hs:(267,1)-(273,36)                                        9009          1    0.0    0.0     0.0    0.0
+     mkStdGen32.(...)                     System.Random                                      System\Random.hs:272:9-39                                                9011          1    0.0    0.0     0.0    0.0
+     mkStdGen32.q                         System.Random                                      System\Random.hs:272:9-39                                                9014          1    0.0    0.0     0.0    0.0
+     mkStdGen32.s                         System.Random                                      System\Random.hs:271:9-45                                                9012          1    0.0    0.0     0.0    0.0
+     mkStdGen32.s1                        System.Random                                      System\Random.hs:272:9-39                                                9010          1    0.0    0.0     0.0    0.0
+     mkStdGen32.s2                        System.Random                                      System\Random.hs:273:9-36                                                9013          1    0.0    0.0     0.0    0.0
+ CAF:newBitStream1                        Data.HashTable.Internal.CheapPseudoRandomBitStream <no location info>                                                       5238          0    0.0    0.0     0.0    0.0
+  newBitStream                            Data.HashTable.Internal.CheapPseudoRandomBitStream src\Data\HashTable\Internal\CheapPseudoRandomBitStream.hs:(86,1)-(90,42) 8971          1    0.0    0.0     0.0    0.0
+ CAF:numElemsInCacheLine                  Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:52:1-19                             5249          0    0.0    0.0     0.0    0.0
+  numElemsInCacheLine                     Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:(52,1)-(54,62)                      8965          1    0.0    0.0     0.0    0.0
+   numElemsInCacheLine.z                  Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:54:5-62                             8966          1    0.0    0.0     0.0    0.0
+ CAF:primWordToElem                       Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:53:1-14                          5207          0    0.0    0.0     0.0    0.0
+  primWordToElem                          Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:53:1-21                          9201          1    0.0    0.0     0.0    0.0
+ CAF:q_rlk1                               System.Random                                      System\Random.hs:481:8                                                   5094          0    0.0    0.0     0.0    0.0
+  randomIvalInteger                       System.Random                                      System\Random.hs:(468,1)-(489,76)                                        8999          0    0.0    0.0     0.0    0.0
+   randomIvalInteger.q                    System.Random                                      System\Random.hs:481:8-15                                                9000          1    0.0    0.0     0.0    0.0
+ CAF:randomDir1                           Linear                                             <no location info>                                                       4528          0    0.0    0.0     0.0    0.0
+  randomDir                               Linear                                             src\Linear.hs:(64,1)-(69,69)                                             8984          1    0.0    0.0     0.0    0.0
+ CAF:scene                                Main                                               app\Main.hs:14:1-5                                                       4485          0    0.0    0.0     0.0    0.0
+  scene                                   Main                                               app\Main.hs:(14,1)-(21,5)                                                9048          1    0.0    0.0     0.0    0.0
+ CAF:source                               Main                                               app\Main.hs:13:1-6                                                       4484          0    0.0    0.0     0.0    0.0
+  source                                  Main                                               app\Main.hs:13:1-20                                                      9058          1    0.0    0.0     0.0    0.0
+ CAF:stdRange                             System.Random                                      System\Random.hs:514:1-8                                                 5102          0    0.0    0.0     0.0    0.0
+  stdRange                                System.Random                                      System\Random.hs:514:1-26                                                9032          1    0.0    0.0     0.0    0.0
+ CAF:theStdGen                            System.Random                                      System\Random.hs:566:1-9                                                 5099          0    0.0    0.0     0.0    0.0
+  theStdGen                               System.Random                                      System\Random.hs:(566,1)-(568,15)                                        8957          1    0.0    0.0     0.0    0.0
+   mkStdRNG                               System.Random                                      System\Random.hs:(452,1)-(455,55)                                        8958          1    0.0    0.0     0.0    0.0
+    getTime                               System.Random                                      System\Random.hs:(131,1)-(134,60)                                        8960          0    0.0    0.0     0.0    0.0
+     getTime.daytime                      System.Random                                      System\Random.hs:133:7-44                                                8961          1    0.0    0.0     0.0    0.0
+ CAF:wordSize                             Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:44:1-8                              5253          0    0.0    0.0     0.0    0.0
+  wordSize                                Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:44:1-33                             9190          1    0.0    0.0     0.0    0.0
+ CAF:wordSizeInBytes                      Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:74:1-15                          5210          0    0.0    0.0     0.0    0.0
+  wordSizeInBytes                         Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:74:1-49                          8975          1    0.0    0.0     0.0    0.0
+ main                                     Main                                               app\Main.hs:(24,1)-(34,41)                                               8955          0    0.0    0.0   100.0  100.0
+  newSizedReal                            Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:(396,1)-(409,67)                         8963          1    0.0    0.0     0.0    0.0
+   primitive                              Control.Monad.Primitive                            Control\Monad\Primitive.hs:178:3-16                                      8982          2    0.0    0.0     0.0    0.0
+   newArray                               Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:(85,1)-(89,20)                   8973          1    0.0    0.0     0.0    0.0
+    primitive                             Control.Monad.Primitive                            Control\Monad\Primitive.hs:178:3-16                                      8977          2    0.0    0.0     0.0    0.0
+     setByteArray#                        Data.Primitive.Types                               Data\Primitive\Types.hs:163:521-878                                      8978          1    0.0    0.0     0.0    0.0
+      internal                            Control.Monad.Primitive                            Control\Monad\Primitive.hs:97:3-21                                       8979          1    0.0    0.0     0.0    0.0
+      setByteArray#.i                     Data.Primitive.Types                               Data\Primitive\Types.hs:163:596-619                                      8980          1    0.0    0.0     0.0    0.0
+      setByteArray#.n                     Data.Primitive.Types                               Data\Primitive\Types.hs:163:660-683                                      8981          1    0.0    0.0     0.0    0.0
+    newArray.sz                           Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:86:9-33                          8974          1    0.0    0.0     0.0    0.0
+   newSizedReal.maxAttempts               Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:398:9-52                                 8968          1    0.0    0.0     0.0    0.0
+    log2                                  Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:(292,1)-(295,37)                    8969          1    0.0    0.0     0.0    0.0
+     log2.go                              Data.HashTable.Internal.Utils                      src\Data\HashTable\Internal\Utils.hs:(294,5)-(295,37)                    8970          3    0.0    0.0     0.0    0.0
+   newSizedReal.ntotal                    Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:397:9-50                                 8964          1    0.0    0.0     0.0    0.0
+   newBitStream                           Data.HashTable.Internal.CheapPseudoRandomBitStream src\Data\HashTable\Internal\CheapPseudoRandomBitStream.hs:(86,1)-(90,42) 8972          0    0.0    0.0     0.0    0.0
+  setStdGen                               System.Random                                      System\Random.hs:559:1-42                                                8956          1    0.0    0.0     0.0    0.0
+  simulate                                Scatter                                            src\Scatter.hs:(58,1)-(61,33)                                            8983          1    0.0    0.0   100.0  100.0
+   simulate'                              Scatter                                            src\Scatter.hs:(152,1)-(160,40)                                          9042   78202480    1.5    0.2   100.0  100.0
+    inside                                Scatter                                            src\Scatter.hs:23:7-12                                                   9043   78202480    0.0    0.0     0.0    0.0
+    simulate'.(...)                       Scatter                                            src\Scatter.hs:159:13-33                                                 9214   78202435    0.0    0.0     0.0    0.0
+    simulate'.newN                        Scatter                                            src\Scatter.hs:159:13-33                                                 9215   78202435    0.0    0.0     0.0    0.0
+    collideOutside                        Scatter                                            src\Scatter.hs:(103,1)-(123,78)                                          9044   39101265    3.1    2.5    53.2   54.3
+     collideOutside.intPair               Scatter                                            src\Scatter.hs:104:9-45                                                  9045   39101265    0.1    0.0    27.9   35.0
+      closestIntersection                 Scatter                                            src\Scatter.hs:(49,1)-(52,118)                                           9046   39101265    0.9    1.4    27.8   35.0
+       closestIntersection.ints           Scatter                                            src\Scatter.hs:52:11-118                                                 9047   39101265    1.1    1.0    26.4   33.6
+        closestIntersection.ints.\        Scatter                                            src\Scatter.hs:52:85-106                                                 9050   78202530    1.0    0.9    25.3   32.5
+         intersection                     Shapes                                             src\Shapes.hs:(52,1)-(64,28)                                             9053   78202529    2.3    0.0    24.3   31.6
+          intersection.a                  Shapes                                             src\Shapes.hs:58:9-25                                                    9064   78202529    0.2    0.0     0.2    0.0
+           dot                            Linear                                             src\Linear.hs:49:1-51                                                    9065   78202529    0.0    0.0     0.0    0.0
+          intersection.b                  Shapes                                             src\Shapes.hs:59:9-27                                                    9062   78202529    0.2    0.3     0.3    0.3
+           dot                            Linear                                             src\Linear.hs:49:1-51                                                    9063   78202529    0.0    0.0     0.0    0.0
+          intersection.c                  Shapes                                             src\Shapes.hs:60:9-33                                                    9060   78202529    0.9    0.0     0.9    0.0
+           dot                            Linear                                             src\Linear.hs:49:1-51                                                    9061   78202529    0.0    0.0     0.0    0.0
+          intersection.l                  Shapes                                             src\Shapes.hs:57:9-27                                                    9054   78202529    0.4    0.0     4.9    9.5
+           -                              Linear                                             src\Linear.hs:32:5-20                                                    9055   78202529    0.8    1.6     4.5    9.5
+            <*>                           Linear                                             src\Linear.hs:28:5-52                                                    9056   78202529    1.3    2.5     2.5    3.5
+             fmap                         Linear                                             src\Linear.hs:20:5-44                                                    9059          0    1.2    0.9     1.2    0.9
+            fmap                          Linear                                             src\Linear.hs:20:5-44                                                    9057   78202529    1.2    4.4     1.2    4.4
+          intersection.solution           Shapes                                             src\Shapes.hs:61:9-43                                                    9066   78202529    0.2    0.0     1.4    1.1
+           solveQuadratic                 Shapes                                             src\Shapes.hs:(28,1)-(39,34)                                             9067   78202529    1.2    1.1     1.3    1.1
+            solveQuadratic.discriminant   Shapes                                             src\Shapes.hs:39:9-34                                                    9068   78202529    0.0    0.0     0.0    0.0
+            solveQuadratic.q              Shapes                                             src\Shapes.hs:(32,13)-(34,51)                                            9070   78202441    0.0    0.0     0.0    0.0
+            solveQuadratic.r0             Shapes                                             src\Shapes.hs:35:13-22                                                   9069   78202441    0.0    0.0     0.0    0.0
+            solveQuadratic.r1             Shapes                                             src\Shapes.hs:36:13-22                                                   9071   78202441    0.0    0.0     0.0    0.0
+          intersection.ans                Shapes                                             src\Shapes.hs:(62,9)-(64,28)                                             9072   78202441    0.6    1.7    14.3   20.7
+           distance                       Linear                                             src\Linear.hs:59:1-32                                                    9112   39101220    0.8    0.9     9.9   11.7
+            -                             Linear                                             src\Linear.hs:32:5-20                                                    9116   39101220    0.6    1.0     3.2    5.0
+             <*>                          Linear                                             src\Linear.hs:28:5-52                                                    9117   39101220    0.7    1.3     1.4    1.7
+              fmap                        Linear                                             src\Linear.hs:20:5-44                                                    9126          0    0.7    0.5     0.7    0.5
+             fmap                         Linear                                             src\Linear.hs:20:5-44                                                    9118   39101220    1.1    2.2     1.1    2.2
+            magnitude                     Linear                                             src\Linear.hs:57:1-37                                                    9113   39101220    2.0    2.6     5.9    5.9
+             fmap                         Linear                                             src\Linear.hs:20:5-44                                                    9115   39101220    2.3    2.0     2.3    2.0
+             foldr                        Linear                                             src\Linear.hs:24:5-44                                                    9114   39101220    1.6    1.3     1.6    1.3
+           intersection.ans.p             Shapes                                             src\Shapes.hs:63:26-47                                                   9119   39101220    0.1    0.0     3.9    7.2
+            pointOnRay                    Linear                                             src\Linear.hs:76:1-50                                                    9120   39101220    0.6    1.7     3.8    7.2
+             +                            Linear                                             src\Linear.hs:31:5-20                                                    9121   39101220    0.3    0.8     2.6    4.7
+              <*>                         Linear                                             src\Linear.hs:28:5-52                                                    9122   39101220    0.7    1.3     1.8    1.7
+               fmap                       Linear                                             src\Linear.hs:20:5-44                                                    9127          0    1.1    0.5     1.1    0.5
+              fmap                        Linear                                             src\Linear.hs:20:5-44                                                    9123   39101220    0.6    2.2     0.6    2.2
+             .*                           Linear                                             src\Linear.hs:53:1-20                                                    9124   39101220    0.3    0.3     0.6    0.8
+              fmap                        Linear                                             src\Linear.hs:20:5-44                                                    9125   39101220    0.3    0.5     0.3    0.5
+        closestIntersection.ints.\        Scatter                                            src\Scatter.hs:52:38-51                                                  9049   78202530    0.0    0.0     0.0    0.0
+       closestIntersection.(...)          Scatter                                            src\Scatter.hs:51:23-51                                                  9108   39101221    0.2    0.0     0.2    0.0
+       closestIntersection.obj            Scatter                                            src\Scatter.hs:51:23-51                                                  9107   39101221    0.2    0.0     0.2    0.0
+       closestIntersection.int            Scatter                                            src\Scatter.hs:51:23-51                                                  9111   39101220    0.2    0.0     0.2    0.0
+     collide                              Scatter                                            src\Scatter.hs:(73,1)-(97,22)                                            9073   39101221    1.3    0.0    21.8   16.7
+      collide.distanceCovered             Scatter                                            src\Scatter.hs:79:9-52                                                   9101   39101221    0.4    0.0     0.4    0.0
+      collide.sigmaTotal                  Scatter                                            src\Scatter.hs:75:9-38                                                   9102   39101221    0.1    0.0     0.1    0.0
+       getSigmaTotal                      Scatter                                            src\Scatter.hs:(36,1)-(37,28)                                            9103   39101221    0.0    0.0     0.0    0.0
+      distanceFrom                        Shapes                                             src\Shapes.hs:43:7-18                                                    9109   39101220    0.0    0.0     0.0    0.0
+      collide.col                         Scatter                                            src\Scatter.hs:92:13-98                                                  9211          5    0.0    0.0     0.0    0.0
+      collide.p                           Scatter                                            src\Scatter.hs:85:13-46                                                  9162          5    0.0    0.0     0.0    0.0
+       pointOnRay                         Linear                                             src\Linear.hs:76:1-50                                                    9163          5    0.0    0.0     0.0    0.0
+        +                                 Linear                                             src\Linear.hs:31:5-20                                                    9164          5    0.0    0.0     0.0    0.0
+         <*>                              Linear                                             src\Linear.hs:28:5-52                                                    9165          5    0.0    0.0     0.0    0.0
+          fmap                            Linear                                             src\Linear.hs:20:5-44                                                    9184          0    0.0    0.0     0.0    0.0
+         fmap                             Linear                                             src\Linear.hs:20:5-44                                                    9166          5    0.0    0.0     0.0    0.0
+        .*                                Linear                                             src\Linear.hs:53:1-20                                                    9167          5    0.0    0.0     0.0    0.0
+         fmap                             Linear                                             src\Linear.hs:20:5-44                                                    9168          5    0.0    0.0     0.0    0.0
+      collide.sigmaScattering             Scatter                                            src\Scatter.hs:74:9-55                                                   9212          5    0.0    0.0     0.0    0.0
+       getSigmaElasticScattering          Scatter                                            src\Scatter.hs:(32,1)-(33,40)                                            9213          5    0.0    0.0     0.0    0.0
+      toKey                               Scatter                                            src\Scatter.hs:65:1-46                                                   9161          5    0.0    0.0     0.0    0.0
+      randomDir                           Linear                                             src\Linear.hs:(64,1)-(69,69)                                             9128          0    0.0    0.0     0.0    0.0
+       randomDir.phi                      Linear                                             src\Linear.hs:68:9-31                                                    9218          5    0.0    0.0     0.0    0.0
+       randomDir.theta                    Linear                                             src\Linear.hs:67:9-27                                                    9217          5    0.0    0.0     0.0    0.0
+       randomIO                           System.Random                                      System\Random.hs:326:3-40                                                9129          0    0.0    0.0     0.0    0.0
+        getStdRandom                      System.Random                                      System\Random.hs:(586,1)-(587,26)                                        9130          0    0.0    0.0     0.0    0.0
+         getStdRandom.swap                System.Random                                      System\Random.hs:587:9-26                                                9131         10    0.0    0.0     0.0    0.0
+         random                           System.Random                                      System\Random.hs:(410,3)-(418,24)                                        9132         10    0.0    0.0     0.0    0.0
+          random                          System.Random                                      System\Random.hs:349:64-85                                               9133         10    0.0    0.0     0.0    0.0
+           randomBounded                  System.Random                                      System\Random.hs:458:1-44                                                9134         10    0.0    0.0     0.0    0.0
+            randomR                       System.Random                                      System\Random.hs:349:34-61                                               9135         10    0.0    0.0     0.0    0.0
+             randomIvalIntegral           System.Random                                      System\Random.hs:462:1-71                                                9136         10    0.0    0.0     0.0    0.0
+              randomIvalInteger           System.Random                                      System\Random.hs:(468,1)-(489,76)                                        9137         10    0.0    0.0     0.0    0.0
+               randomIvalInteger.f        System.Random                                      System\Random.hs:(486,8)-(489,76)                                        9140         40    0.0    0.0     0.0    0.0
+                randomIvalInteger.f.(...) System.Random                                      System\Random.hs:488:25-39                                               9143         30    0.0    0.0     0.0    0.0
+                 next                     System.Random                                      System\Random.hs:218:3-17                                                9144          0    0.0    0.0     0.0    0.0
+                  stdNext                 System.Random                                      System\Random.hs:(518,1)-(528,64)                                        9145         30    0.0    0.0     0.0    0.0
+                   stdNext.k              System.Random                                      System\Random.hs:522:17-38                                               9148         30    0.0    0.0     0.0    0.0
+                   stdNext.k'             System.Random                                      System\Random.hs:526:17-38                                               9151         30    0.0    0.0     0.0    0.0
+                   stdNext.s1'            System.Random                                      System\Random.hs:523:17-59                                               9149         30    0.0    0.0     0.0    0.0
+                   stdNext.s1''           System.Random                                      System\Random.hs:524:17-64                                               9150         30    0.0    0.0     0.0    0.0
+                   stdNext.s2'            System.Random                                      System\Random.hs:527:17-60                                               9152         30    0.0    0.0     0.0    0.0
+                   stdNext.s2''           System.Random                                      System\Random.hs:528:17-64                                               9153         30    0.0    0.0     0.0    0.0
+                   stdNext.z              System.Random                                      System\Random.hs:520:17-34                                               9147         30    0.0    0.0     0.0    0.0
+                   stdNext.z'             System.Random                                      System\Random.hs:519:17-58                                               9146         30    0.0    0.0     0.0    0.0
+                randomIvalInteger.f.g'    System.Random                                      System\Random.hs:488:25-39                                               9154         30    0.0    0.0     0.0    0.0
+                randomIvalInteger.f.v'    System.Random                                      System\Random.hs:489:25-76                                               9141         30    0.0    0.0     0.0    0.0
+                randomIvalInteger.f.x     System.Random                                      System\Random.hs:488:25-39                                               9142         30    0.0    0.0     0.0    0.0
+               randomIvalInteger.k        System.Random                                      System\Random.hs:482:8-20                                                9138         10    0.0    0.0     0.0    0.0
+               randomIvalInteger.magtgt   System.Random                                      System\Random.hs:483:8-21                                                9139         10    0.0    0.0     0.0    0.0
+          random.mask53                   System.Random                                      System\Random.hs:418:5-24                                                9155         10    0.0    0.0     0.0    0.0
+      randomIO                            System.Random                                      System\Random.hs:326:3-40                                                9074          0    0.1    0.0    20.0   16.7
+       getStdRandom                       System.Random                                      System\Random.hs:(586,1)-(587,26)                                        9075          0    1.3    1.3    19.9   16.7
+        getStdRandom.swap                 System.Random                                      System\Random.hs:587:9-26                                                9076   39101226    0.0    0.0     0.0    0.0
+        random                            System.Random                                      System\Random.hs:(410,3)-(418,24)                                        9077   39101226    0.5    0.2    18.5   15.5
+         random                           System.Random                                      System\Random.hs:349:64-85                                               9078   39101226    0.1    0.0    18.1   15.3
+          randomBounded                   System.Random                                      System\Random.hs:458:1-44                                                9079   39101226    0.1    0.0    18.0   15.3
+           randomR                        System.Random                                      System\Random.hs:349:34-61                                               9080   39101226    0.2    0.2    17.9   15.3
+            randomIvalIntegral            System.Random                                      System\Random.hs:462:1-71                                                9081   39101226    0.3    0.2    17.7   15.2
+             randomIvalInteger            System.Random                                      System\Random.hs:(468,1)-(489,76)                                        9082   39101226    2.9    1.9    17.4   14.9
+              randomIvalInteger.f         System.Random                                      System\Random.hs:(486,8)-(489,76)                                        9085  156404904    3.1    1.5    12.8   11.3
+               randomIvalInteger.f.(...)  System.Random                                      System\Random.hs:488:25-39                                               9088  117303678    0.4    0.0     7.0    7.3
+                next                      System.Random                                      System\Random.hs:218:3-17                                                9089          0    0.7    0.7     6.6    7.3
+                 stdNext                  System.Random                                      System\Random.hs:(518,1)-(528,64)                                        9090  117303678    5.0    5.2     5.8    6.6
+                  stdNext.k               System.Random                                      System\Random.hs:522:17-38                                               9093  117303678    0.0    0.0     0.0    0.0
+                  stdNext.k'              System.Random                                      System\Random.hs:526:17-38                                               9096  117303678    0.0    0.0     0.0    0.0
+                  stdNext.s1'             System.Random                                      System\Random.hs:523:17-59                                               9094  117303678    0.0    0.0     0.0    0.0
+                  stdNext.s1''            System.Random                                      System\Random.hs:524:17-64                                               9095  117303678    0.2    0.5     0.2    0.5
+                  stdNext.s2'             System.Random                                      System\Random.hs:527:17-60                                               9097  117303678    0.0    0.0     0.0    0.0
+                  stdNext.s2''            System.Random                                      System\Random.hs:528:17-64                                               9098  117303678    0.2    0.5     0.2    0.5
+                  stdNext.z               System.Random                                      System\Random.hs:520:17-34                                               9092  117303678    0.3    0.5     0.3    0.5
+                  stdNext.z'              System.Random                                      System\Random.hs:519:17-58                                               9091  117303678    0.0    0.0     0.0    0.0
+               randomIvalInteger.f.g'     System.Random                                      System\Random.hs:488:25-39                                               9099  117303678    0.0    0.0     0.0    0.0
+               randomIvalInteger.f.v'     System.Random                                      System\Random.hs:489:25-76                                               9086  117303678    2.7    2.5     2.7    2.5
+               randomIvalInteger.f.x      System.Random                                      System\Random.hs:488:25-39                                               9087  117303678    0.0    0.0     0.0    0.0
+              randomIvalInteger.k         System.Random                                      System\Random.hs:482:8-20                                                9083   39101226    1.0    1.0     1.0    1.0
+              randomIvalInteger.magtgt    System.Random                                      System\Random.hs:483:8-21                                                9084   39101226    0.7    0.6     0.7    0.6
+         random.mask53                    System.Random                                      System\Random.hs:418:5-24                                                9100   39101226    0.0    0.0     0.0    0.0
+     collideOutside.(...)                 Scatter                                            src\Scatter.hs:108:13-36                                                 9106   39101221    0.0    0.0     0.0    0.0
+     collideOutside.obj                   Scatter                                            src\Scatter.hs:108:13-36                                                 9105   39101221    0.1    0.0     0.1    0.0
+     material                             Scatter                                            src\Scatter.hs:42:7-14                                                   9104   39101221    0.2    0.0     0.2    0.0
+     collideOutside.int                   Scatter                                            src\Scatter.hs:108:13-36                                                 9110   39101220    0.1    0.0     0.1    0.0
+     dir                                  Linear                                             src\Linear.hs:72:15-17                                                   9223   39101215    0.0    0.0     0.0    0.0
+     point                                Shapes                                             src\Shapes.hs:42:7-11                                                    9233   39101215    0.1    0.0     0.1    0.0
+     ray                                  Scatter                                            src\Scatter.hs:22:7-9                                                    9222   39101215    0.0    0.0     0.0    0.0
+     ==                                   Scatter                                            src\Scatter.hs:69:15-16                                                  9209          5    0.0    0.0     0.0    0.0
+     collideOutside.(...)                 Scatter                                            src\Scatter.hs:115:17-53                                                 9158          5    0.0    0.0     0.0    0.0
+     collideOutside.col                   Scatter                                            src\Scatter.hs:115:17-53                                                 9210          5    0.0    0.0     0.0    0.0
+     collideOutside.intensity             Scatter                                            src\Scatter.hs:115:17-53                                                 9159          5    0.0    0.0     0.0    0.0
+     collideOutside.pos                   Scatter                                            src\Scatter.hs:115:17-53                                                 9157          5    0.0    0.0     0.0    0.0
+     insert                               Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:133:5-28                                 9156          5    0.0    0.0     0.0    0.0
+     insert'                              Data.HashTable.ST.Cuckoo                           src\Data\HashTable\ST\Cuckoo.hs:(417,1)-(424,12)                         9160          5    0.0    0.0     0.0    0.0
+      fI                                  Data.HashTable.Internal.CacheLine                  src\Data\HashTable\Internal\CacheLine.hs:78:1-17                         9170         35    0.0    0.0     0.0    0.0
+      toPtr                               Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:(113,1)-(115,46)                 9169         20    0.0    0.0     0.0    0.0
+      primitive                           Control.Monad.Primitive                            Control\Monad\Primitive.hs:178:3-16                                      9207         10    0.0    0.0     0.0    0.0
+       marray#                            Data.Primitive.Array                               Data\Primitive\Array.hs:73:25-31                                         9208         10    0.0    0.0     0.0    0.0
+      hash                                Data.Hashable.Class                                Data\Hashable\Class.hs:518:5-67                                          9196          5    0.0    0.0     0.0    0.0
+       hashWithSalt                       Data.Hashable.Class                                Data\Hashable\Class.hs:312:5-38                                          9197          0    0.0    0.0     0.0    0.0
+        defaultHashWithSalt               Data.Hashable.Class                                Data\Hashable\Class.hs:288:1-50                                          9198         10    0.0    0.0     0.0    0.0
+         combine                          Data.Hashable.Class                                Data\Hashable\Class.hs:761:1-40                                          9199         10    0.0    0.0     0.0    0.0
+      writeArray                          Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:(101,1)-(103,30)                 9204          5    0.0    0.0     0.0    0.0
+       primitive                          Control.Monad.Primitive                            Control\Monad\Primitive.hs:178:3-16                                      9205          5    0.0    0.0     0.0    0.0
+        writeByteArray#                   Data.Primitive.Types                               Data\Primitive\Types.hs:166:452-523                                      9206          5    0.0    0.0     0.0    0.0
+      hashWithSalt                        Data.Hashable.Class                                Data\Hashable\Class.hs:519:5-32                                          9175          0    0.0    0.0     0.0    0.0
+       hashWithSalt1                      Data.Hashable.Class                                Data\Hashable\Class.hs:269:1-45                                          9176          0    0.0    0.0     0.0    0.0
+        liftHashWithSalt                  Data.Hashable.Class                                Data\Hashable\Class.hs:522:5-46                                          9177          0    0.0    0.0     0.0    0.0
+         defaultLiftHashWithSalt          Data.Hashable.Class                                Data\Hashable\Class.hs:281:1-60                                          9178          0    0.0    0.0     0.0    0.0
+          liftHashWithSalt2               Data.Hashable.Class                                Data\Hashable\Class.hs:(525,5)-(526,43)                                  9179          5    0.0    0.0     0.0    0.0
+           hashWithSalt                   Data.Hashable.Class                                Data\Hashable\Class.hs:312:5-38                                          9181          0    0.0    0.0     0.0    0.0
+            defaultHashWithSalt           Data.Hashable.Class                                Data\Hashable\Class.hs:288:1-50                                          9182         10    0.0    0.0     0.0    0.0
+             combine                      Data.Hashable.Class                                Data\Hashable\Class.hs:761:1-40                                          9185         10    0.0    0.0     0.0    0.0
+          hashWithSalt                    Data.Hashable.Class                                Data\Hashable\Class.hs:312:5-38                                          9186          0    0.0    0.0     0.0    0.0
+           defaultHashWithSalt            Data.Hashable.Class                                Data\Hashable\Class.hs:288:1-50                                          9187          5    0.0    0.0     0.0    0.0
+            combine                       Data.Hashable.Class                                Data\Hashable\Class.hs:761:1-40                                          9188          5    0.0    0.0     0.0    0.0
+      primWordToElem                      Data.HashTable.Internal.IntArray                   src\Data\HashTable\Internal\IntArray.hs:53:1-21                          9202          0    0.0    0.0     0.0    0.0
+     newRay                               Scatter                                            src\Scatter.hs:68:29-34                                                  9216          5    0.0    0.0     0.0    0.0
+    collideInside                         Scatter                                            src\Scatter.hs:(127,1)-(148,81)                                          9219   39101215    3.3    2.1    45.2   45.5
+     collide                              Scatter                                            src\Scatter.hs:(73,1)-(97,22)                                            9248   39101215    0.9    0.0    22.0   16.7
+      collide.distanceCovered             Scatter                                            src\Scatter.hs:79:9-52                                                   9276   39101215    0.4    0.0     0.4    0.0
+      collide.sigmaTotal                  Scatter                                            src\Scatter.hs:75:9-38                                                   9277   39101215    0.1    0.0     0.1    0.0
+       getSigmaTotal                      Scatter                                            src\Scatter.hs:(36,1)-(37,28)                                            9278   39101215    0.0    0.0     0.0    0.0
+      distanceFrom                        Shapes                                             src\Shapes.hs:43:7-18                                                    9280   39101215    0.0    0.0     0.0    0.0
+      randomIO                            System.Random                                      System\Random.hs:326:3-40                                                9249          0    0.1    0.0    20.6   16.7
+       getStdRandom                       System.Random                                      System\Random.hs:(586,1)-(587,26)                                        9250          0    1.5    1.3    20.5   16.7
+        getStdRandom.swap                 System.Random                                      System\Random.hs:587:9-26                                                9251   39101215    0.0    0.0     0.0    0.0
+        random                            System.Random                                      System\Random.hs:(410,3)-(418,24)                                        9252   39101215    0.5    0.2    19.1   15.5
+         random                           System.Random                                      System\Random.hs:349:64-85                                               9253   39101215    0.1    0.0    18.5   15.3
+          randomBounded                   System.Random                                      System\Random.hs:458:1-44                                                9254   39101215    0.1    0.0    18.5   15.3
+           randomR                        System.Random                                      System\Random.hs:349:34-61                                               9255   39101215    0.2    0.2    18.4   15.3
+            randomIvalIntegral            System.Random                                      System\Random.hs:462:1-71                                                9256   39101215    0.3    0.2    18.2   15.2
+             randomIvalInteger            System.Random                                      System\Random.hs:(468,1)-(489,76)                                        9257   39101215    3.1    1.9    17.8   14.9
+              randomIvalInteger.f         System.Random                                      System\Random.hs:(486,8)-(489,76)                                        9260  156404860    3.1    1.5    12.8   11.3
+               randomIvalInteger.f.(...)  System.Random                                      System\Random.hs:488:25-39                                               9263  117303645    0.5    0.0     7.0    7.3
+                next                      System.Random                                      System\Random.hs:218:3-17                                                9264          0    0.8    0.7     6.6    7.3
+                 stdNext                  System.Random                                      System\Random.hs:(518,1)-(528,64)                                        9265  117303645    5.0    5.2     5.8    6.6
+                  stdNext.k               System.Random                                      System\Random.hs:522:17-38                                               9268  117303645    0.0    0.0     0.0    0.0
+                  stdNext.k'              System.Random                                      System\Random.hs:526:17-38                                               9271  117303645    0.0    0.0     0.0    0.0
+                  stdNext.s1'             System.Random                                      System\Random.hs:523:17-59                                               9269  117303645    0.0    0.0     0.0    0.0
+                  stdNext.s1''            System.Random                                      System\Random.hs:524:17-64                                               9270  117303645    0.2    0.5     0.2    0.5
+                  stdNext.s2'             System.Random                                      System\Random.hs:527:17-60                                               9272  117303645    0.0    0.0     0.0    0.0
+                  stdNext.s2''            System.Random                                      System\Random.hs:528:17-64                                               9273  117303645    0.2    0.5     0.2    0.5
+                  stdNext.z               System.Random                                      System\Random.hs:520:17-34                                               9267  117303645    0.4    0.5     0.4    0.5
+                  stdNext.z'              System.Random                                      System\Random.hs:519:17-58                                               9266  117303645    0.0    0.0     0.0    0.0
+               randomIvalInteger.f.g'     System.Random                                      System\Random.hs:488:25-39                                               9274  117303645    0.0    0.0     0.0    0.0
+               randomIvalInteger.f.v'     System.Random                                      System\Random.hs:489:25-76                                               9261  117303645    2.6    2.5     2.6    2.5
+               randomIvalInteger.f.x      System.Random                                      System\Random.hs:488:25-39                                               9262  117303645    0.0    0.0     0.0    0.0
+              randomIvalInteger.k         System.Random                                      System\Random.hs:482:8-20                                                9258   39101215    1.2    1.0     1.2    1.0
+              randomIvalInteger.magtgt    System.Random                                      System\Random.hs:483:8-21                                                9259   39101215    0.7    0.6     0.7    0.6
+         random.mask53                    System.Random                                      System\Random.hs:418:5-24                                                9275   39101215    0.0    0.0     0.0    0.0
+     collideInside.(...)                  Scatter                                            src\Scatter.hs:133:13-31                                                 9281   39101215    0.0    0.0     0.0    0.0
+     collideInside.(...)                  Scatter                                            src\Scatter.hs:128:9-29                                                  9224   39101215    0.1    0.0     0.1    0.0
+      inside                              Scatter                                            src\Scatter.hs:23:7-12                                                   9225   39101215    0.0    0.0     0.0    0.0
+     collideInside.int                    Scatter                                            src\Scatter.hs:133:13-31                                                 9282   39101215    0.0    0.0     0.0    0.0
+     collideInside.obj                    Scatter                                            src\Scatter.hs:128:9-29                                                  9226   39101215    0.0    0.0     0.0    0.0
+     collideInside.posInt                 Scatter                                            src\Scatter.hs:129:9-49                                                  9220   39101215    0.5    0.5    19.8   26.6
+      intersection                        Shapes                                             src\Shapes.hs:(52,1)-(64,28)                                             9228   39101215    1.0    0.0    19.3   26.2
+       intersection.a                     Shapes                                             src\Shapes.hs:58:9-25                                                    9239   39101215    0.1    0.0     0.1    0.0
+        dot                               Linear                                             src\Linear.hs:49:1-51                                                    9240   39101215    0.0    0.0     0.0    0.0
+       intersection.ans                   Shapes                                             src\Shapes.hs:(62,9)-(64,28)                                             9247   39101215    0.6    1.7    14.6   20.7
+        distance                          Linear                                             src\Linear.hs:59:1-32                                                    9283   39101215    0.8    0.9     9.9   11.7
+         -                                Linear                                             src\Linear.hs:32:5-20                                                    9287   39101215    0.7    1.0     3.3    5.0
+          <*>                             Linear                                             src\Linear.hs:28:5-52                                                    9288   39101215    0.7    1.3     1.5    1.7
+           fmap                           Linear                                             src\Linear.hs:20:5-44                                                    9297          0    0.7    0.5     0.7    0.5
+          fmap                            Linear                                             src\Linear.hs:20:5-44                                                    9289   39101215    1.2    2.2     1.2    2.2
+         magnitude                        Linear                                             src\Linear.hs:57:1-37                                                    9284   39101215    2.0    2.6     5.8    5.9
+          fmap                            Linear                                             src\Linear.hs:20:5-44                                                    9286   39101215    2.3    2.0     2.3    2.0
+          foldr                           Linear                                             src\Linear.hs:24:5-44                                                    9285   39101215    1.5    1.3     1.5    1.3
+        intersection.ans.p                Shapes                                             src\Shapes.hs:63:26-47                                                   9290   39101215    0.1    0.0     4.1    7.2
+         pointOnRay                       Linear                                             src\Linear.hs:76:1-50                                                    9291   39101215    0.7    1.7     4.0    7.2
+          +                               Linear                                             src\Linear.hs:31:5-20                                                    9292   39101215    0.4    0.8     2.7    4.7
+           <*>                            Linear                                             src\Linear.hs:28:5-52                                                    9293   39101215    0.8    1.3     1.8    1.7
+            fmap                          Linear                                             src\Linear.hs:20:5-44                                                    9298          0    1.0    0.5     1.0    0.5
+           fmap                           Linear                                             src\Linear.hs:20:5-44                                                    9294   39101215    0.6    2.2     0.6    2.2
+          .*                              Linear                                             src\Linear.hs:53:1-20                                                    9295   39101215    0.2    0.3     0.6    0.8
+           fmap                           Linear                                             src\Linear.hs:20:5-44                                                    9296   39101215    0.3    0.5     0.3    0.5
+       intersection.b                     Shapes                                             src\Shapes.hs:59:9-27                                                    9237   39101215    0.1    0.2     0.1    0.2
+        dot                               Linear                                             src\Linear.hs:49:1-51                                                    9238   39101215    0.0    0.0     0.0    0.0
+       intersection.c                     Shapes                                             src\Shapes.hs:60:9-33                                                    9235   39101215    0.4    0.0     0.4    0.0
+        dot                               Linear                                             src\Linear.hs:49:1-51                                                    9236   39101215    0.0    0.0     0.0    0.0
+       intersection.l                     Shapes                                             src\Shapes.hs:57:9-27                                                    9229   39101215    0.2    0.0     2.4    4.7
+        -                                 Linear                                             src\Linear.hs:32:5-20                                                    9230   39101215    0.4    0.8     2.2    4.7
+         <*>                              Linear                                             src\Linear.hs:28:5-52                                                    9231   39101215    0.6    1.3     1.2    1.7
+          fmap                            Linear                                             src\Linear.hs:20:5-44                                                    9234          0    0.6    0.5     0.6    0.5
+         fmap                             Linear                                             src\Linear.hs:20:5-44                                                    9232   39101215    0.6    2.2     0.6    2.2
+       intersection.solution              Shapes                                             src\Shapes.hs:61:9-43                                                    9241   39101215    0.1    0.0     0.6    0.6
+        solveQuadratic                    Shapes                                             src\Shapes.hs:(28,1)-(39,34)                                             9242   39101215    0.5    0.6     0.6    0.6
+         solveQuadratic.discriminant      Shapes                                             src\Shapes.hs:39:9-34                                                    9243   39101215    0.0    0.0     0.0    0.0
+         solveQuadratic.q                 Shapes                                             src\Shapes.hs:(32,13)-(34,51)                                            9245   39101215    0.0    0.0     0.0    0.0
+         solveQuadratic.r0                Shapes                                             src\Shapes.hs:35:13-22                                                   9244   39101215    0.0    0.0     0.0    0.0
+         solveQuadratic.r1                Shapes                                             src\Shapes.hs:36:13-22                                                   9246   39101215    0.0    0.0     0.0    0.0
+      ray                                 Scatter                                            src\Scatter.hs:22:7-9                                                    9221   39101215    0.0    0.0     0.0    0.0
+      shape                               Scatter                                            src\Scatter.hs:41:7-11                                                   9227   39101215    0.0    0.0     0.0    0.0
+     dir                                  Linear                                             src\Linear.hs:72:15-17                                                   9300   39101215    0.0    0.0     0.0    0.0
+     material                             Scatter                                            src\Scatter.hs:42:7-14                                                   9279   39101215    0.0    0.0     0.0    0.0
+     point                                Shapes                                             src\Shapes.hs:42:7-11                                                    9301   39101215    0.1    0.0     0.1    0.0
+     ray                                  Scatter                                            src\Scatter.hs:22:7-9                                                    9299   39101215    0.0    0.0     0.0    0.0
+   simulate.n                             Scatter                                            src\Scatter.hs:60:9-60                                                   9041         45    0.0    0.0     0.0    0.0
+   randomDir                              Linear                                             src\Linear.hs:(64,1)-(69,69)                                             8985          0    0.0    0.0     0.0    0.0
+    randomDir.phi                         Linear                                             src\Linear.hs:68:9-31                                                    9052         45    0.0    0.0     0.0    0.0
+    randomdir.theta                       linear                                             src\linear.hs:67:9-27                                                    9051         45    0.0    0.0     0.0    0.0
+    randomIO                              System.Random                                      System\Random.hs:326:3-40                                                8988          0    0.0    0.0     0.0    0.0
+     getStdRandom                         System.Random                                      System\Random.hs:(586,1)-(587,26)                                        8989          0    0.0    0.0     0.0    0.0
+      getStdRandom.swap                   System.Random                                      System\Random.hs:587:9-26                                                8990         90    0.0    0.0     0.0    0.0
+      random                              System.Random                                      System\Random.hs:(410,3)-(418,24)                                        8991         90    0.0    0.0     0.0    0.0
+       random                             System.Random                                      System\Random.hs:349:64-85                                               8992         90    0.0    0.0     0.0    0.0
+        randomBounded                     System.Random                                      System\Random.hs:458:1-44                                                8993         90    0.0    0.0     0.0    0.0
+         randomR                          System.Random                                      System\Random.hs:349:34-61                                               8994         90    0.0    0.0     0.0    0.0
+          randomIvalIntegral              System.Random                                      System\Random.hs:462:1-71                                                8995         90    0.0    0.0     0.0    0.0
+           randomIvalInteger              System.Random                                      System\Random.hs:(468,1)-(489,76)                                        8996         90    0.0    0.0     0.0    0.0
+            randomIvalInteger.f           System.Random                                      System\Random.hs:(486,8)-(489,76)                                        9001        360    0.0    0.0     0.0    0.0
+             randomIvalInteger.f.(...)    System.Random                                      System\Random.hs:488:25-39                                               9004        270    0.0    0.0     0.0    0.0
+              next                        System.Random                                      System\Random.hs:218:3-17                                                9006          0    0.0    0.0     0.0    0.0
+               stdNext                    System.Random                                      System\Random.hs:(518,1)-(528,64)                                        9015        270    0.0    0.0     0.0    0.0
+                stdNext.k                 System.Random                                      System\Random.hs:522:17-38                                               9018        270    0.0    0.0     0.0    0.0
+                stdNext.k'                System.Random                                      System\Random.hs:526:17-38                                               9021        270    0.0    0.0     0.0    0.0
+                stdNext.s1'               System.Random                                      System\Random.hs:523:17-59                                               9019        270    0.0    0.0     0.0    0.0
+                stdNext.s1''              System.Random                                      System\Random.hs:524:17-64                                               9020        270    0.0    0.0     0.0    0.0
+                stdNext.s2'               System.Random                                      System\Random.hs:527:17-60                                               9022        270    0.0    0.0     0.0    0.0
+                stdNext.s2''              System.Random                                      System\Random.hs:528:17-64                                               9023        270    0.0    0.0     0.0    0.0
+                stdNext.z                 System.Random                                      System\Random.hs:520:17-34                                               9017        270    0.0    0.0     0.0    0.0
+                stdNext.z'                System.Random                                      System\Random.hs:519:17-58                                               9016        270    0.0    0.0     0.0    0.0
+             randomIvalInteger.f.g'       System.Random                                      System\Random.hs:488:25-39                                               9037        270    0.0    0.0     0.0    0.0
+             randomIvalInteger.f.v'       System.Random                                      System\Random.hs:489:25-76                                               9002        270    0.0    0.0     0.0    0.0
+             randomIvalInteger.f.x        System.Random                                      System\Random.hs:488:25-39                                               9003        270    0.0    0.0     0.0    0.0
+            randomIvalInteger.k           System.Random                                      System\Random.hs:482:8-20                                                8997         90    0.0    0.0     0.0    0.0
+            randomIvalInteger.magtgt      System.Random                                      System\Random.hs:483:8-21                                                8998         90    0.0    0.0     0.0    0.0
+       random.mask53                      System.Random                                      System\Random.hs:418:5-24                                                9038         90    0.0    0.0     0.0    0.0

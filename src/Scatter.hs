@@ -56,7 +56,7 @@ simulate intensities source scene = do
     let n = Neutron {ray = Ray source dir, inside = Nothing}
 
     -- TODO: ugly
-    putStrLn "neutron:"
+    -- putStrLn "neutron:"
     nil <- runMaybeT $ simulate' intensities n scene
     return ()
 
@@ -69,9 +69,11 @@ simulate' intensities n scene = do
     -- find the intersection and object intersected
     (int,obj) <- liftMaybe $ getIntersection n scene
 
+    -- TODO: god-awful
+    let mat = let o = inside n in if o == Nothing then Air else let (Just ob) = o in material ob
+
     -- get the collision based on the intersection and the material
-    let mat = material obj
-        sigmaScat = getSigmaElasticScattering mat
+    let sigmaScat = getSigmaElasticScattering mat
         sigmaTot = getSigmaTotal mat
 
     r0 <- lift $ randomRIO (0,1) -- between 0 and 1?
@@ -80,14 +82,15 @@ simulate' intensities n scene = do
     if distanceCovered < (distanceFrom int)
     -- there was a collision
     then do
-        lift $ putStrLn "collision"
+        -- lift $ putStrLn $ "collision in " ++ show mat
+        -- lift $ putStrLn $ "distanceCovered: " ++ show distanceCovered
         let colPoint = pointOnRay (ray n) distanceCovered
         r1 <- lift $ randomRIO (0,1) -- between 0 and 1?
 
         if (sigmaScat / sigmaTot) > r1
         -- scattering
         then do
-            lift $ putStrLn "- scattering"
+            -- lift $ putStrLn "- scattering"
             lift $ H.insert intensities (toKey colPoint) 0.5 -- TODO: actual intensity
 
             newDir <- lift $ randomDir -- TODO: actual new direction
@@ -96,12 +99,14 @@ simulate' intensities n scene = do
             simulate' intensities newN scene
         -- absorbed
         else do
-            lift $ putStrLn "- absorbed"
+            -- lift $ putStrLn "- absorbed"
             lift $ H.insert intensities (toKey colPoint) 1 -- TODO: actual intensity
     -- move into next object
     else do
-        lift $ putStrLn "moving into next object"
-        let newN = Neutron {ray = Ray (point int) (dir (ray n)), inside = Just obj}
+        -- lift $ putStrLn "moving into next object"
+        -- TODO: replace with global epsilon
+        let newP = pointOnRay (Ray (point int) (dir (ray n))) 0.0001
+            newN = Neutron {ray = Ray (newP) (dir (ray n)), inside = Just obj}
         simulate' intensities newN scene
 
 -- convert a point to a key

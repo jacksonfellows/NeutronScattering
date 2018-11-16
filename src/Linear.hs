@@ -4,6 +4,7 @@ module Linear
     ( V3(..)
     , dot, (.*)
     , magnitude, distance
+    , norm
     , randomDir
     , Ray(..)
     , pointOnRay
@@ -58,6 +59,11 @@ magnitude = sqrt . sum . (fmap (**2))
 distance :: Floating a => V3 a -> V3 a -> a
 distance a b = magnitude (a - b)
 
+-- normalize
+norm :: Floating a => V3 a -> V3 a
+norm v = fmap (/mag) v
+    where mag = magnitude v
+
 -- random unit vector
 -- TODO: does it have to be a double?
 randomDir :: IO (V3 Double)
@@ -72,6 +78,7 @@ data Ray a = Ray
     { origin, dir :: V3 a }
     deriving (Show, Read)
 
-pointOnRay :: Num a => Ray a -> a -> V3 a
-pointOnRay Ray {origin, dir} t = origin + dir .* t
+-- TODO: do I need to normalize?
+pointOnRay :: Floating a => Ray a -> a -> V3 a
+pointOnRay Ray {origin, dir} t = origin + (norm dir) .* t
 
