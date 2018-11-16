@@ -1,9 +1,11 @@
 module Volume
     ( HashTable
+    , dumpHashTable
     , writeVolume
     ) where
 
 import           Codec.Picture
+import           Data.Hashable
 import qualified Data.HashTable.IO as H
 import           System.IO.Unsafe  (unsafePerformIO)
 import           Text.Printf       (printf)
@@ -11,6 +13,11 @@ import           Text.Printf       (printf)
 import           Linear
 
 type HashTable k v = H.CuckooHashTable k v
+
+-- helper function that prints all key value pairs in a hash table
+dumpHashTable :: (Eq k, Hashable k, Show k, Show v) => HashTable k v -> IO ()
+dumpHashTable = H.mapM_ printPair
+    where printPair = \(k, v) -> do putStrLn $ (show k) ++ ": " ++ (show v)
 
 -- write the volume as a series of slices along the z axis
 -- TODO: set dir and prefix
