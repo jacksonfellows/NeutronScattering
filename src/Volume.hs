@@ -2,11 +2,13 @@ module Volume
     ( HashTable
     , dumpHashTable
     , writeVolume
+    , addToVolume
     ) where
 
 import           Codec.Picture
 import           Data.Hashable
 import qualified Data.HashTable.IO as H
+import           Data.Vec3
 import           System.IO.Unsafe  (unsafePerformIO)
 import           Text.Printf       (printf)
 
@@ -30,3 +32,16 @@ writeVolume intensities (xMax, yMax, zMax) = mapM_ (\(image,z) -> saveTiffImage 
 makeImage :: HashTable (Int, Int, Int) Float -> (Int, Int, Int) -> DynamicImage
 makeImage intensities (xMax, yMax, z) = ImageYF $ generateImage getPixel xMax yMax
     where getPixel x y = let val = unsafePerformIO $ H.lookup intensities $ (x, y, z) in if val == Nothing then 0 else let (Just v) = val in v
+
+-- convert a point to a key
+toKey :: CVec3 -> (Int, Int, Int)
+toKey v = let (x, y, z) = toXYZ v in (floor x, floor y, floor z)
+
+-- add a point and intensity to the volume
+addToVolume :: HashTable (Int, Int, Int) Float -> CVec3 -> Float -> IO ()
+addToVolume intensities point val = do
+    let key = toKey point
+    prev <- H.lookup intensities key
+    case prev of
+        Nothing -> H.insert intensities key val
+        Just v  -> H.insert intensities key (val + v)

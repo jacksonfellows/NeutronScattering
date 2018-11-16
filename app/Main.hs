@@ -2,8 +2,8 @@ module Main where
 
 import           Control.Monad     (replicateM)
 import qualified Data.HashTable.IO as H
+import           Data.Vec3
 import           System.Random     (mkStdGen, setStdGen)
-import Data.Vec3
 
 import           Scatter
 import           Shapes
@@ -28,7 +28,7 @@ main = do
     intensities <- H.new :: IO (HashTable (Int, Int, Int) Float)
     replicateM 1000000 $ simulate intensities source scene
 
-    -- dumpHashTable intensities
+    dumpHashTable intensities
 
     -- TODO: make writePaths work again
     -- writePaths "paths.obj" source $ map (map fst) results

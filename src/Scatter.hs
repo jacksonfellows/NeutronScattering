@@ -91,7 +91,7 @@ simulate' intensities n scene = do
         -- scattering
         then do
             -- lift $ putStrLn "- scattering"
-            lift $ H.insert intensities (toKey colPoint) 0.1 -- TODO: actual intensity
+            lift $ addToVolume intensities colPoint 0.1 -- TODO: actual intensity
 
             newDir <- lift $ randomDir -- TODO: actual new direction
             let newN = Neutron {ray = Ray colPoint newDir, inside = (inside n)}
@@ -100,7 +100,7 @@ simulate' intensities n scene = do
         -- absorbed
         else do
             -- lift $ putStrLn "- absorbed"
-            lift $ H.insert intensities (toKey colPoint) 0.1 -- TODO: actual intensity
+            lift $ addToVolume intensities colPoint 0.1 -- TODO: actual intensity
     -- move into next object
     else do
         -- lift $ putStrLn "moving into next object"
@@ -108,7 +108,3 @@ simulate' intensities n scene = do
         let newP = pointOnRay (Ray (point int) (dir (ray n))) 0.0001
             newN = Neutron {ray = Ray (newP) (dir (ray n)), inside = Just obj}
         simulate' intensities newN scene
-
--- convert a point to a key
-toKey :: CVec3 -> (Int, Int, Int)
-toKey v = let (x, y, z) = toXYZ v in (floor x, floor y, floor z)
