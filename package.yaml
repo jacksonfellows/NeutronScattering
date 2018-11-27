@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - simple-vec3
 - mwc-random
+- vector # needed?
 - transformers
 - JuicyPixels
 - hashtables
