@@ -10,8 +10,8 @@ module Shapes
     , randomDir
     ) where
 
-import           Data.Vec3     hiding (origin)
-import           System.Random (randomIO)
+import           Data.Vec3         hiding (origin)
+import           System.Random.MWC as MWC
 
 import           Types
 
@@ -20,11 +20,12 @@ pointOnRay :: Ray -> Double -> CVec3
 pointOnRay Ray {origin, dir} n = origin <+> (norm .^ n)
     where norm = normalize dir
 
+-- move to ST monad?
 -- neither should this
-randomDir :: IO CVec3
-randomDir = do
-    r0 <- randomIO :: IO Double
-    r1 <- randomIO :: IO Double
+randomDir :: MWC.GenIO -> IO CVec3
+randomDir gen = do
+    r0 <- MWC.uniform gen
+    r1 <- MWC.uniform gen
     let theta = r0 * 2 * pi
         phi = acos $ r1 * 2 - 1
     return $ CVec3 (cos theta * sin phi) (sin theta * sin phi) (cos phi)

@@ -11,7 +11,7 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
 import qualified Data.HashTable.IO         as H
 import           Data.Vec3
-import           System.Random             (randomRIO)
+import           System.Random.MWC         as MWC
 
 import           Shapes
 import           Types
@@ -23,11 +23,11 @@ liftMaybe = MaybeT . return
 -- Units? Real values?
 getSigmaElasticScattering :: Material -> Double
 getSigmaElasticScattering Air      = 0
-getSigmaElasticScattering Paraffin = 0.2
+getSigmaElasticScattering Paraffin = 0.8
 
 getSigmaTotal :: Material -> Double
 getSigmaTotal Air      = 0
-getSigmaTotal Paraffin = 1
+getSigmaTotal Paraffin = 0.2
 
 -- TODO: looks god-awful
 -- TODO: rewrite using Maybe monad?
@@ -47,25 +47,27 @@ getIntersection n@(Neutron {ray, inside}) objs
         return (int,obj)
 
 -- assuming that we are starting outside of all the objects in the scene
-simulate :: HashTable (Int, Int, Int) Float -- map to update
+simulate :: MWC.GenIO -- random number generator
+         -> HashTable (Int, Int, Int) Float -- map to update
          -> CVec3 -- source
          -> [Object] -- scene
          -> IO () -- updates to the map
-simulate intensities source scene = do
-    dir <- randomDir
+simulate gen intensities source scene = do
+    dir <- randomDir gen
     let n = Neutron {ray = Ray source dir, inside = Nothing}
 
     -- TODO: ugly
     -- putStrLn "neutron:"
-    nil <- runMaybeT $ simulate' intensities n scene
+    nil <- runMaybeT $ simulate' gen intensities n scene
     return ()
 
 -- the neutron can start anywhere
-simulate' :: HashTable (Int, Int, Int) Float -- map to update
+simulate' :: MWC.GenIO -- random number generator
+          -> HashTable (Int, Int, Int) Float -- map to update
           -> Neutron -- neutron
           -> [Object] -- scene
           -> MaybeT IO () -- (possible) updates to the
-simulate' intensities n scene = do
+simulate' gen intensities n scene = do
     -- find the intersection and object intersected
     (int,obj) <- liftMaybe $ getIntersection n scene
 
@@ -76,7 +78,7 @@ simulate' intensities n scene = do
     let sigmaScat = getSigmaElasticScattering mat
         sigmaTot = getSigmaTotal mat
 
-    r0 <- lift $ randomRIO (0,1) -- between 0 and 1?
+    r0 <- uniform gen
     let distanceCovered = -(1 / sigmaTot) * log r0
 
     if distanceCovered < (distanceFrom int)
@@ -85,7 +87,7 @@ simulate' intensities n scene = do
         -- lift $ putStrLn $ "collision in " ++ show mat
         -- lift $ putStrLn $ "distanceCovered: " ++ show distanceCovered
         let colPoint = pointOnRay (ray n) distanceCovered
-        r1 <- lift $ randomRIO (0,1) -- between 0 and 1?
+        r1 <- uniform gen
 
         if (sigmaScat / sigmaTot) > r1
         -- scattering
@@ -93,10 +95,10 @@ simulate' intensities n scene = do
             -- lift $ putStrLn "- scattering"
             lift $ addToVolume intensities colPoint 0.1 -- TODO: actual intensity
 
-            newDir <- lift $ randomDir -- TODO: actual new direction
+            newDir <- lift $ randomDir gen -- TODO: actual new direction
             let newN = Neutron {ray = Ray colPoint newDir, inside = (inside n)}
 
-            simulate' intensities newN scene
+            simulate' gen intensities newN scene
         -- absorbed
         else do
             -- lift $ putStrLn "- absorbed"
@@ -107,4 +109,4 @@ simulate' intensities n scene = do
         -- TODO: replace with global epsilon
         let newP = pointOnRay (Ray (point int) (dir (ray n))) 0.0001
             newN = Neutron {ray = Ray (newP) (dir (ray n)), inside = Just obj}
-        simulate' intensities newN scene
+        simulate' gen intensities newN scene

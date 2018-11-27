@@ -1,9 +1,9 @@
 module Main where
 
-import           Control.Monad     (replicateM)
+import           Control.Monad     (replicateM_)
 import qualified Data.HashTable.IO as H
 import           Data.Vec3
-import           System.Random     (mkStdGen, setStdGen)
+import           System.Random.MWC as MWC
 
 import           Scatter
 import           Shapes
@@ -22,13 +22,13 @@ scene =
 
 main :: IO ()
 main = do
-    setStdGen $ mkStdGen 871
+    gen <- MWC.create -- fixed generator
 
     -- TODO: should it be Int?
     intensities <- H.new :: IO (HashTable (Int, Int, Int) Float)
-    replicateM 1000000 $ simulate intensities source scene
+    replicateM_ 1000000 $ simulate gen intensities source scene
 
-    dumpHashTable intensities
+    -- dumpHashTable intensities
 
     -- TODO: make writePaths work again
     -- writePaths "paths.obj" source $ map (map fst) results
