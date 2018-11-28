@@ -13,75 +13,96 @@ import qualified Data.HashTable.IO         as H
 import           Data.Vec3
 import           System.Random.MWC         as MWC
 
-import           Shapes
-import           Types
+import           Object
+import           Shape
 import           Volume
+
+_air_ = MkMat { getSigmaScat = const 0, getSigmaTot = const 0, getName = "air" }
+
+data Neutron a = MkNeutron
+    { ray    :: Ray
+    , inside :: Maybe (Object a)
+    } deriving (Show)
 
 -- lifts a normal maybe value into MaybeT
 liftMaybe = MaybeT . return
 
--- Units? Real values?
-getSigmaElasticScattering :: Material -> Double
-getSigmaElasticScattering Air      = 0
-getSigmaElasticScattering Paraffin = 0.8
+-- ugly hack to allow me to sort (Intersection,Object) pairs
+-- a runtime error will be thrown if it two objects are actually compared
+instance Eq (Object a) where
+    _ == _ = undefined
 
-getSigmaTotal :: Material -> Double
-getSigmaTotal Air      = 0
-getSigmaTotal Paraffin = 0.2
+instance Ord (Object a) where
+    _ <= _ = undefined
+
+-- move to ST monad?
+randomDir :: MWC.GenIO -> IO CVec3
+randomDir gen = do
+    r0 <- MWC.uniform gen
+    r1 <- MWC.uniform gen
+    let theta = r0 * 2 * pi
+        phi = acos $ r1 * 2 - 1
+    return $ CVec3 (cos theta * sin phi) (sin theta * sin phi) (cos phi)
 
 -- TODO: looks god-awful
 -- TODO: rewrite using Maybe monad?
 -- returns the intersection along with the object intersected
-closestIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
-closestIntersection Neutron {ray} objs
+closestIntersection :: (Shape a) => Neutron a -> [Object a] -> Maybe (Intersection, Object a)
+closestIntersection MkNeutron {ray} objs
     | null ints = Nothing
     | otherwise = let (Just int,obj) = minimum ints in Just (int,obj)
-        where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\Object {shape} -> intersection ray shape) objs) objs
+        where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\MkObject {getShape=shape} -> ray `intersect` shape) objs) objs
 
-getIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
-getIntersection n@(Neutron {ray, inside}) objs
+getIntersection :: (Shape a) => Neutron a -> [Object a] -> Maybe (Intersection, Object a)
+getIntersection n@(MkNeutron {ray, inside}) objs
     | inside == Nothing = closestIntersection n objs -- outside of all objects
     | otherwise = do
         obj <- inside
-        int <- intersection ray (shape obj)
+        int <- ray `intersect` (getShape obj)
         return (int,obj)
 
 -- assuming that we are starting outside of all the objects in the scene
-simulate :: MWC.GenIO -- random number generator
+simulate :: (Shape a) =>
+         MWC.GenIO -- random number generator
          -> HashTable (Int, Int, Int) Float -- map to update
          -> CVec3 -- source
-         -> [Object] -- scene
+         -> [Object a] -- scene
          -> IO () -- updates to the map
 simulate gen intensities source scene = do
     dir <- randomDir gen
-    let n = Neutron {ray = Ray source dir, inside = Nothing}
+    let n = MkNeutron {ray = MkRay source dir, inside = Nothing}
 
     -- TODO: ugly
     -- putStrLn "neutron:"
     nil <- runMaybeT $ simulate' gen intensities n scene
     return ()
 
+-- ugly helper
+pointOnRay :: Ray -> Double -> CVec3
+pointOnRay (MkRay o d) n = o <+> (d .^ n)
+
 -- the neutron can start anywhere
-simulate' :: MWC.GenIO -- random number generator
+simulate' :: (Shape a)
+          => MWC.GenIO -- random number generator
           -> HashTable (Int, Int, Int) Float -- map to update
-          -> Neutron -- neutron
-          -> [Object] -- scene
+          -> Neutron a -- neutron
+          -> [Object a] -- scene
           -> MaybeT IO () -- (possible) updates to the
 simulate' gen intensities n scene = do
     -- find the intersection and object intersected
     (int,obj) <- liftMaybe $ getIntersection n scene
 
     -- TODO: god-awful
-    let mat = let o = inside n in if o == Nothing then Air else let (Just ob) = o in material ob
+    let mat = let o = inside n in if o == Nothing then _air_ else let (Just ob) = o in getMat ob
 
     -- get the collision based on the intersection and the material
-    let sigmaScat = getSigmaElasticScattering mat
-        sigmaTot = getSigmaTotal mat
+    let sigmaScat = getSigmaScat mat 1
+        sigmaTot = getSigmaTot mat 1
 
     r0 <- uniform gen
     let distanceCovered = -(1 / sigmaTot) * log r0
 
-    if distanceCovered < (distanceFrom int)
+    if distanceCovered < getDist int
     -- there was a collision
     then do
         -- lift $ putStrLn $ "collision in " ++ show mat
@@ -96,7 +117,7 @@ simulate' gen intensities n scene = do
             lift $ addToVolume intensities colPoint 0.1 -- TODO: actual intensity
 
             newDir <- lift $ randomDir gen -- TODO: actual new direction
-            let newN = Neutron {ray = Ray colPoint newDir, inside = (inside n)}
+            let newN = MkNeutron {ray = MkRay colPoint newDir, inside = (inside n)}
 
             simulate' gen intensities newN scene
         -- absorbed
@@ -107,6 +128,6 @@ simulate' gen intensities n scene = do
     else do
         -- lift $ putStrLn "moving into next object"
         -- TODO: replace with global epsilon
-        let newP = pointOnRay (Ray (point int) (dir (ray n))) 0.0001
-            newN = Neutron {ray = Ray (newP) (dir (ray n)), inside = Just obj}
+        let newP = pointOnRay (MkRay (getPoint int) (getDir (ray n))) 0.0001
+            newN = MkNeutron {ray = MkRay (newP) (getDir (ray n)), inside = Just obj}
         simulate' gen intensities newN scene
