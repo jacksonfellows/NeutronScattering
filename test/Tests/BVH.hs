@@ -6,13 +6,15 @@ import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Test.Tasty.QuickCheck as QC
 
+import           AABB
 import           BVH
 import           Object
 import           Shape
 import           Sphere
 import           Tests.AABB            (UnitVector (..))
 
-leafHelper = buildLeaf . (flip MkObject) (MkMat id id "test")
+objHelper = (flip MkObject) (MkMat id id "test")
+leafHelper = buildLeaf . objHelper
 
 tests :: TestTree
 tests = testGroup "BVH" [unitTests, propertyTests]
@@ -45,7 +47,17 @@ instance QC.Arbitrary Sphere where
 propertyTests = testGroup "Property Tests"
     [ QC.testProperty "ray `intersect` sphere == ray `intersect` AABB (sphere)" $
         \ray sphere -> ray `intersect` sphere == (fmap fst $ ray `intersectBVH` (leafHelper sphere))
---
---     , QC.testProperty "the aabb of a branch contains its children"
---         \[CVec3]
+
+     , QC.testProperty "the aabb of a branch contains its children" containsTest
     ]
+
+containsTest :: [Sphere] -> Bool
+containsTest [] = True
+containsTest spheres = parentsContainChildren tree
+    where (o:os) = map objHelper spheres
+          tree = foldl addToBVH (buildLeaf o) os
+
+parentsContainChildren :: BVHTree a -> Bool
+parentsContainChildren (Leaf _ _) = True
+parentsContainChildren (Branch aabb l r) = all pred [l,r]
+    where pred = \c -> (aabb `contains` (getAABB c)) && (parentsContainChildren c)

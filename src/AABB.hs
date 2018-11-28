@@ -2,17 +2,18 @@ module AABB
     ( AABB(..)
     , intersects
     , union
+    , contains
     ) where
 
 import           Data.Vec3
-import Prelude hiding (zipWith)
+import           Prelude   hiding (zipWith)
 
 import           Ray
 
 data AABB = MkAABB
     { getMin :: CVec3
     , getMax :: CVec3
-    } deriving (Show)
+    } deriving (Show, Eq)
 
 intersects :: Ray -> AABB -> Bool
 (MkRay o d) `intersects` (MkAABB b0 b1)
@@ -29,3 +30,6 @@ union :: AABB -> AABB -> AABB
 union (MkAABB min0 max0) (MkAABB min1 max1) = MkAABB newMin newMax
     where newMin = zipWith min min0 min1
           newMax = zipWith max max0 max1
+
+contains :: AABB -> AABB -> Bool
+a `contains` b = a == union a b

@@ -14,7 +14,7 @@ import           AABB
 import           Ray
 
 tests :: TestTree
-tests = testGroup "AABB" [intersectsTests]
+tests = testGroup "AABB" [intersectsTests, cAndUTests]
 
 intersectsTests = testGroup "intersects" [unitTests, propertyTests]
 
@@ -69,4 +69,19 @@ propertyTests = testGroup "Property Tests"
 
     , QC.testProperty "All positive rays with origin (0,0,0) should not intersect an aabb with a - min and - max" $
         \(MkPosVec3 dir) (MkNegVec3 b0) (MkNegVec3 b1) -> not $ MkRay (CVec3 0 0 0) dir `intersects` (MkAABB b0 b1)
+    ]
+
+cAndUTests = testGroup "contains and union" [cAndUPropertyTests]
+
+-- TODO: not only negative mins and maxes
+instance Arbitrary AABB where
+    arbitrary = do
+        MkNegVec3 min <- arbitrary
+        MkPosVec3 max <- arbitrary
+        return $ MkAABB min max
+
+cAndUPropertyTests = testGroup "Property Tests"
+    [ QC.testProperty "if a contains b then b does not contain a" $
+        \b@(MkAABB min0 max0) (MkNegVec3 neg) (MkPosVec3 pos) -> let a = MkAABB (min0 <+> neg) (max0 <+> pos)
+                                                                 in a `contains` b == True && b `contains` a == False
     ]

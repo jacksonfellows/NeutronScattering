@@ -3,6 +3,7 @@ module BVH
     , intersectBVH
     , addToBVH
     , buildLeaf
+    , getAABB
     ) where
 
 import           Control.Applicative ((<|>))
