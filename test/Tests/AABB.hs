@@ -84,4 +84,7 @@ cAndUPropertyTests = testGroup "Property Tests"
     [ QC.testProperty "if a contains b then b does not contain a" $
         \b@(MkAABB min0 max0) (MkNegVec3 neg) (MkPosVec3 pos) -> let a = MkAABB (min0 <+> neg) (max0 <+> pos)
                                                                  in a `contains` b == True && b `contains` a == False
+
+    , QC.testProperty "a union contains both of its members" $
+        \a b -> (union a b) `contains` a && (union a b) `contains` b
     ]
