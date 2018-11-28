@@ -1,5 +1,9 @@
 module Tests.AABB
-    ( tests ) where
+    ( tests
+    , PosVec3(..)
+    , NegVec3(..)
+    , UnitVector(..)
+    ) where
 
 import           Data.Vec3
 import           Test.Tasty

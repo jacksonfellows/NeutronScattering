@@ -1,6 +1,8 @@
 module BVH
     ( BVHTree(..)
     , intersectBVH
+    , addToBVH
+    , buildLeaf
     ) where
 
 import           Control.Applicative ((<|>))
