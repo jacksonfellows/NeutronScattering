@@ -61,5 +61,8 @@ propertyTests = testGroup "Property Tests"
         \(MkUnitVector dir) -> norm dir - 1 < 1e-5
 
     , QC.testProperty "All rays with origin (0,0,0) intersect an aabb with an all - min and all + max" $
-        \(MkUnitVector dir) (MkNegVec3 min) (MkPosVec3 max) -> MkRay (CVec3 0 0 0) (normalize dir) `intersects` (MkAABB min max)
+        \(MkUnitVector dir) (MkNegVec3 min) (MkPosVec3 max) -> MkRay (CVec3 0 0 0) dir `intersects` (MkAABB min max)
+
+    , QC.testProperty "All positive rays with origin (0,0,0) should not intersect an aabb with a - min and - max" $
+        \(MkPosVec3 dir) (MkNegVec3 b0) (MkNegVec3 b1) -> not $ MkRay (CVec3 0 0 0) dir `intersects` (MkAABB b0 b1)
     ]
