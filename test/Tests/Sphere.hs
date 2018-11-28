@@ -1,8 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Tests.Sphere
-    ( tests
-    ) where
+    ( tests) where
 
 import           Data.Vec3
 import           Test.Tasty
