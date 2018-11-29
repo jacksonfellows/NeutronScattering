@@ -13,6 +13,7 @@ import qualified Data.HashTable.IO         as H
 import           Data.Vec3
 import           System.Random.MWC         as MWC
 
+import           BVH
 import           Object
 import           Shape
 import           Volume
@@ -36,29 +37,20 @@ randomDir gen = do
         phi = acos $ r1 * 2 - 1
     return $ CVec3 (cos theta * sin phi) (sin theta * sin phi) (cos phi)
 
--- TODO: looks god-awful
--- TODO: rewrite using Maybe monad?
--- returns the intersection along with the object intersected
-closestIntersection :: (Shape a) => Neutron a -> [Object a] -> Maybe (Intersection, Object a)
-closestIntersection MkNeutron {ray} objs
-    | null ints = Nothing
-    | otherwise = let (Just int,obj) = minimum ints in Just (int,obj)
-        where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\MkObject {getShape=shape} -> ray `intersect` shape) objs) objs
-
-getIntersection :: (Shape a) => Neutron a -> [Object a] -> Maybe (Intersection, Object a)
-getIntersection n@(MkNeutron {ray, inside}) objs
-    | inside == Nothing = closestIntersection n objs -- outside of all objects
+getIntersection :: (Shape a) => Neutron a -> BVHTree a -> Maybe (Intersection, Object a)
+getIntersection n@(MkNeutron {ray, inside}) scene
+    | inside == Nothing = ray `intersectBVH` scene -- outside of all objects
     | otherwise = do
         obj <- inside
         int <- ray `intersect` (getShape obj)
         return (int,obj)
 
 -- assuming that we are starting outside of all the objects in the scene
-simulate :: (Shape a) =>
+simulate :: (Shape a, Show a) =>
          MWC.GenIO -- random number generator
          -> HashTable (Int, Int, Int) Float -- map to update
          -> CVec3 -- source
-         -> [Object a] -- scene
+         -> BVHTree a -- scene
          -> IO () -- updates to the map
 simulate gen intensities source scene = do
     dir <- randomDir gen
@@ -74,15 +66,17 @@ pointOnRay :: Ray -> Double -> CVec3
 pointOnRay (MkRay o d) n = o <+> (d .^ n)
 
 -- the neutron can start anywhere
-simulate' :: (Shape a)
+simulate' :: (Shape a, Show a)
           => MWC.GenIO -- random number generator
           -> HashTable (Int, Int, Int) Float -- map to update
           -> Neutron a -- neutron
-          -> [Object a] -- scene
+          -> BVHTree a -- scene
           -> MaybeT IO () -- (possible) updates to the
 simulate' gen intensities n scene = do
     -- find the intersection and object intersected
+    -- lift $ print $ "getting intersection for " ++ show n
     (int,obj) <- liftMaybe $ getIntersection n scene
+    -- lift $ print "got intersection"
 
     -- TODO: god-awful
     let mat = let o = inside n in if o == Nothing then _air_ else let (Just ob) = o in getMat ob

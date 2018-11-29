@@ -4,6 +4,7 @@ module BVH
     , addToBVH
     , buildLeaf
     , getAABB
+    , parentsContainChildren
     ) where
 
 import           Control.Applicative ((<|>))
@@ -68,3 +69,8 @@ lowestSurfaceArea node (Branch _ l r)
     | otherwise = R
     where newA n = surfaceArea $ union (getAABB node) (getAABB n)
           surfaceArea (MkAABB min max) = max `distance` min -- directly proportional to surface area
+
+parentsContainChildren :: BVHTree a -> Bool
+parentsContainChildren (Leaf _ _) = True
+parentsContainChildren (Branch aabb l r) = all pred [l,r]
+    where pred = \c -> (aabb `contains` (getAABB c)) && (parentsContainChildren c)

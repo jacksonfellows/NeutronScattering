@@ -56,8 +56,3 @@ containsTest [] = True
 containsTest spheres = parentsContainChildren tree
     where (o:os) = map objHelper spheres
           tree = foldl addToBVH (buildLeaf o) os
-
-parentsContainChildren :: BVHTree a -> Bool
-parentsContainChildren (Leaf _ _) = True
-parentsContainChildren (Branch aabb l r) = all pred [l,r]
-    where pred = \c -> (aabb `contains` (getAABB c)) && (parentsContainChildren c)
