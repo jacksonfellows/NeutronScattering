@@ -1,10 +1,13 @@
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE BangPatterns, NamedFieldPuns #-}   
 
 module Scatter
     ( Neutron(..)
     , Material(..)
     , Object(..)
     , simulate
+    -- for debugging
+    , getIntersection
+    , closestIntersection
     ) where
 
 import           Control.Monad.Trans.Class
@@ -68,9 +71,14 @@ simulate :: (Shape a) =>
          -> CVec3 -- source
          -> [Object a] -- scene
          -> IO () -- updates to the map
-simulate gen intensities source scene = do
+simulate gen intensities source !scene = do
     dir <- randomDir gen
-    let n = MkNeutron {ray = MkRay source dir, inside = Nothing}
+    -- let n = MkNeutron {ray = MkRay source dir, inside = Nothing}
+    -- TODO: check if we are inside an object
+    -- I'm not implementing this right now because we might not need it
+    -- For the bunny tests that I am doing, we always start inside the bunny,
+    -- which is the only item in the scene
+    let n = MkNeutron {ray = MkRay source dir, inside = Just $ head scene}
 
     -- TODO: ugly
     -- putStrLn "neutron:"
@@ -90,7 +98,9 @@ simulate' :: (Shape a)
           -> MaybeT IO () -- (possible) updates to the
 simulate' gen intensities n scene = do
     -- find the intersection and object intersected
+    -- lift $ putStrLn "getting intersection"
     (int,obj) <- liftMaybe $ getIntersection n scene
+    -- lift $ putStrLn "got intersection"
 
     -- TODO: god-awful
     let mat = let o = inside n in if o == Nothing then _air_ else let (Just ob) = o in getMat ob
@@ -127,7 +137,7 @@ simulate' gen intensities n scene = do
     -- move into next object
     else do
         -- lift $ putStrLn "moving into next object"
-        -- TODO: replace with global epsilon
-        let newP = pointOnRay (MkRay (getPoint int) (getDir (ray n))) 0.0001
+        -- TODO: replace with global epsilon?
+        let newP = pointOnRay (MkRay (getPoint int) (getDir (ray n))) 1e-3
             newN = MkNeutron {ray = MkRay (newP) (getDir (ray n)), inside = Just obj}
         simulate' gen intensities newN scene

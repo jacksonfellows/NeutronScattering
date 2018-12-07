@@ -4,7 +4,7 @@ module Object
     ) where
 
 data Object a = MkObject
-    { getShape :: a
+    { getShape :: !a
     , getMat   :: Material
     } deriving (Show)
 

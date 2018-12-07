@@ -22,16 +22,19 @@ dumpHashTable = H.mapM_ printPair
 
 -- write the volume as a series of slices along the z axis
 -- TODO: set dir and prefix
-writeVolume :: HashTable (Int, Int, Int) Float -> (Int, Int, Int) -> IO ()
-writeVolume intensities (xMax, yMax, zMax) = mapM_ (\(image,z) -> saveTiffImage ("scene\\slice" ++ printf "%02d" z ++ ".tiff") image) images
-    where
-        images = map (\z -> (makeImage intensities (xMax, yMax, z), z)) [0..zMax]
+writeVolume :: HashTable (Int, Int, Int) Float -> ((Int,Int), (Int,Int), (Int,Int)) -> IO ()
+writeVolume intensities ((xMin,xMax), (yMin,yMax), (zMin,zMax)) = mapM_ saveImage images
+    where saveImage (image,z) = saveTiffImage ("scene\\slice" ++ printf "%02d" (z-zMin) ++ ".tiff") image
+          images = map (\z -> (makeImage intensities ((xMin,xMax), (yMin,yMax), z), z)) [zMin..zMax]
 
 -- create an image from a specific z slice
 -- TODO: looks god-awful
-makeImage :: HashTable (Int, Int, Int) Float -> (Int, Int, Int) -> DynamicImage
-makeImage intensities (xMax, yMax, z) = ImageYF $ generateImage getPixel xMax yMax
-    where getPixel x y = let val = unsafePerformIO $ H.lookup intensities $ (x, y, z) in if val == Nothing then 0 else let (Just v) = val in v
+makeImage :: HashTable (Int, Int, Int) Float -> ((Int,Int), (Int,Int), Int) -> DynamicImage
+makeImage intensities ((xMin,xMax), (yMin,yMax), z) = ImageYF $ generateImage getPixel (xMax-xMin) (yMax-yMin)
+    where getPixel x y = let val = unsafePerformIO $ H.lookup intensities $ (x+xMin, y+yMin, z)
+                         in case val of
+                            Nothing  -> 0
+                            (Just v) -> v
 
 -- convert a point to a key
 toKey :: CVec3 -> (Int, Int, Int)

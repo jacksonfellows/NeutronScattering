@@ -1,48 +1,46 @@
 module Main where
 
-import           Control.Monad     (replicateM_)
-import qualified Data.HashTable.IO as H
+import           Control.Monad        (replicateM_)
+import           Data.Attoparsec.Text
+import qualified Data.HashTable.IO    as H
+import           Data.Text.IO         (readFile)
 import           Data.Vec3
-import qualified Data.Vector
-import           System.Random.MWC as MWC
+-- import           Data.Vector.Unboxed  ((!))
+import qualified Data.Vector.Unboxed  as V
+import           Graphics.Formats.STL
+import           System.Environment
+import           System.Random.MWC    as MWC
 
+import           Mesh
 import           Scatter
-import           Sphere
 import           Volume
 
-source = CVec3 50 50 50
+showTriangle (Triangle norm verts) = "norm: " ++ (show norm) ++ ", verts: " ++ (show verts)
 
--- helper function to generate random scenes for testing
-randomSpheres :: GenIO -> Int -> Double -> Double-> IO [Sphere]
-randomSpheres gen n pntScale radScale = do
-    xs <- MWC.uniformVector gen n
-    ys <- MWC.uniformVector gen n
-    zs <- MWC.uniformVector gen n
-    let points = Data.Vector.map fromXYZ $ Data.Vector.zip3 xs ys zs
-
-    radii <- MWC.uniformVector gen n
-
-    let scaledPnts = Data.Vector.map (.^ pntScale) points
-        scaledRads = Data.Vector.map (* radScale) radii
-    return $ Data.Vector.toList $ Data.Vector.zipWith MkSphere scaledPnts scaledRads
-
+source = CVec3 0 0 0
 _paraffin_ = MkMat { getSigmaScat = const 0.8, getSigmaTot = const 0.2, getName = "paraffin" }
 
 main :: IO ()
 main = do
-    gen <- MWC.create -- fixed generator
+    -- TODO: move all model reading to Mesh.hs
+    bunny <- Data.Text.IO.readFile "bunny.stl"
+    putStrLn "read bunny"
+    let res = parseOnly stlParser bunny
+        Right tris = fmap triangles res
 
-    -- create some random spheres to use as a scene
-    spheres <- randomSpheres gen 50 100 20
-    let scene = map (\s -> MkObject {getShape=s, getMat=_paraffin_}) spheres
+        mesh = fromTris tris
+        scene = [MkObject mesh _paraffin_]
+
+    putStrLn $ "# of triangles: " ++ show (V.length (getTris mesh))
+
+    gen <- MWC.create -- fixed generator
 
     -- TODO: should it be Int?
     intensities <- H.new :: IO (HashTable (Int, Int, Int) Float)
-    replicateM_ 1000000 $ simulate gen intensities source scene
+    putStrLn "about to simulate"
+
+    (n:_) <- getArgs
+    replicateM_ (read n) $ simulate gen intensities source scene
 
     -- dumpHashTable intensities
-
-    -- TODO: make writePaths work again
-    -- writePaths "paths.obj" source $ map (map fst) results
-
-    writeVolume intensities (100,100,100)
+    writeVolume intensities ((-50,50),(-50,50),(-50,50))
