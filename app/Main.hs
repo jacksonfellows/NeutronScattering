@@ -2,10 +2,12 @@ module Main where
 
 import           Codec.Picture
 import           Codec.Picture.Types
-import           Control.Monad       (replicateM_)
+import           Control.Monad        (replicateM_)
 import           Data.Vec3
 import qualified Data.Vector
-import           System.Random.MWC   as MWC
+import qualified Data.Vector.Storable as V
+import           System.Random.MWC    as MWC
+import           Text.Printf          (printf)
 
 import           AABB
 import           BVH
@@ -57,10 +59,16 @@ main = do
 
     img <- MWC.withSystemRandom . asGenST $ \gen -> do
         img <- createMutableImage width (height * depth) 0
-        replicateM_ 100 $ simulate gen img source scene
+        replicateM_ 1000000 $ simulate gen img source depth scene
         unsafeFreezeImage img
 
-    savePngImage "scene.png" $ ImageY8 img
+    -- cut this big image into slices that can been used by slicer
+    let dat = imageData img
+        step = V.length dat `div` depth
+        slices = [ Image width height (V.slice i step dat) | i <- [0,step..(V.length dat - 1)] ]
+
+    -- TODO: use generic file path separator
+    mapM_ (\(img,n) -> savePngImage (printf "scene\\slice%02d.png" n) (ImageY8 img)) $ zip slices [(0::Int)..]
 
     -- TODO: make writePaths work again
     -- writePaths "paths.obj" source $ map (map fst) results

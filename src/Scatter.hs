@@ -8,6 +8,7 @@ module Scatter
     ) where
 
 import           Codec.Picture.Types
+import           Control.Monad             (when)
 import           Control.Monad.ST
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
@@ -46,14 +47,15 @@ simulate :: (Shape a, Show a)
          => GenST s -- random number generator
          -> MutableImage s Pixel8
          -> CVec3 -- source
+         -> Int
          -> BVHTree a -- scene
          -> ST s () -- updates to the image
-simulate gen image source scene = do
+simulate gen image source depth scene = do
     dir <- randomDir gen
     let n = MkNeutron {ray = MkRay source dir, inside = Nothing}
 
     -- TODO: ugly
-    nil <- runMaybeT $ simulate' gen image n scene
+    nil <- runMaybeT $ simulate' gen image n depth scene
     return ()
 
 -- ugly helper
@@ -65,9 +67,10 @@ simulate' :: (Shape a, Show a)
           => MWC.GenST s -- random number generator
           -> MutableImage s Pixel8
           -> Neutron a -- neutron
+          -> Int
           -> BVHTree a -- scene
           -> MaybeT (ST s) () -- (possible) updates to the image
-simulate' gen image n scene = do
+simulate' gen image n depth scene = do
     -- find the intersection and object intersected
     (int,obj) <- MaybeT . return $ getIntersection n scene
 
@@ -90,24 +93,25 @@ simulate' gen image n scene = do
         if (sigmaScat / sigmaTot) > r1
         -- scattering
         then do
-            lift $ addToImage image colPoint 25 -- TODO: actual intensity
+            lift $ addToImage image colPoint depth 25 -- TODO: actual intensity
 
             newDir <- lift $ randomDir gen -- TODO: actual new direction
             let newN = MkNeutron {ray = MkRay colPoint newDir, inside = (inside n)}
 
-            simulate' gen image newN scene
+            simulate' gen image newN depth scene
         -- absorbed
         else do
-            lift $ addToImage image colPoint 25 -- TODO: actual intensity
+            lift $ addToImage image colPoint depth 25 -- TODO: actual intensity
     -- move into next object
     else do
         -- TODO: replace with global epsilon
         let newP = pointOnRay (MkRay (getPoint int) (getDir (ray n))) 0.0001
             newN = MkNeutron {ray = MkRay (newP) (getDir (ray n)), inside = Just obj}
-        simulate' gen image newN scene
+        simulate' gen image newN depth scene
 
-addToImage :: MutableImage s Pixel8 -> CVec3 -> Pixel8 -> ST s ()
-addToImage img pnt = writePixel img iX iY
+addToImage :: MutableImage s Pixel8 -> CVec3 -> Int -> Pixel8 -> ST s ()
+addToImage img pnt depth pix = when inImg $ writePixel img iX iY pix
     where (x,y,z) = toXYZ pnt
           iX = round x
-          iY = round (y * z)
+          iY = round y + round z * depth
+          inImg = 0 <= iX && iX < mutableImageWidth img && 0 <= iY && iY < mutableImageHeight img

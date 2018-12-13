@@ -26,8 +26,6 @@ dependencies:
 - vector # needed?
 - transformers
 - JuicyPixels
-- hashtables
-- hashable
 - tasty
 - tasty-hunit
 - tasty-quickcheck
