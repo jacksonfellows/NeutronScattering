@@ -1,21 +1,21 @@
 module Main where
 
-import           Control.Monad     (replicateM_)
-import qualified Data.HashTable.IO as H
+import           Codec.Picture
+import           Codec.Picture.Types
+import           Control.Monad       (replicateM_)
 import           Data.Vec3
 import qualified Data.Vector
-import           System.Random.MWC as MWC
+import           System.Random.MWC   as MWC
 
 import           AABB
 import           BVH
 import           Scatter
 import           Sphere
-import           Volume
 
 source = CVec3 50 50 50
 
 -- helper function to generate random scenes for testing
-randomSpheres :: GenIO -> Int -> Double -> Double-> IO [Sphere]
+randomSpheres :: GenIO -> Int -> Double -> Double -> IO [Sphere]
 randomSpheres gen n pntScale radScale = do
     xs <- MWC.uniformVector gen n
     ys <- MWC.uniformVector gen n
@@ -50,15 +50,17 @@ main = do
         scene = foldl addToBVH (buildLeaf o) os
 
     -- putStrLn $ asOpenScad scene
-    print $ parentsContainChildren scene
 
-    -- TODO: should it be Int?
-    -- intensities <- H.new :: IO (HashTable (Int, Int, Int) Float)
-    -- replicateM_ 1000000 $ simulate gen intensities source scene
+    let width = 100
+        height = 100
+        depth = 100
 
-    -- dumpHashTable intensities
+    img <- MWC.withSystemRandom . asGenST $ \gen -> do
+        img <- createMutableImage width (height * depth) 0
+        replicateM_ 100 $ simulate gen img source scene
+        unsafeFreezeImage img
+
+    savePngImage "scene.png" $ ImageY8 img
 
     -- TODO: make writePaths work again
     -- writePaths "paths.obj" source $ map (map fst) results
-
-    -- writeVolume intensities (100,100,100)

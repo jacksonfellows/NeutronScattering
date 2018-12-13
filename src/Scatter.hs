@@ -7,16 +7,16 @@ module Scatter
     , simulate
     ) where
 
+import           Codec.Picture.Types
+import           Control.Monad.ST
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
-import qualified Data.HashTable.IO         as H
 import           Data.Vec3
 import           System.Random.MWC         as MWC
 
 import           BVH
 import           Object
 import           Shape
-import           Volume
 
 _air_ = MkMat { getSigmaScat = const 0, getSigmaTot = const 0, getName = "air" }
 
@@ -25,11 +25,7 @@ data Neutron a = MkNeutron
     , inside :: Maybe (Object a)
     } deriving (Show)
 
--- lifts a normal maybe value into MaybeT
-liftMaybe = MaybeT . return
-
--- move to ST monad?
-randomDir :: MWC.GenIO -> IO CVec3
+randomDir :: MWC.GenST s -> ST s CVec3
 randomDir gen = do
     r0 <- MWC.uniform gen
     r1 <- MWC.uniform gen
@@ -46,19 +42,18 @@ getIntersection n@(MkNeutron {ray, inside}) scene
         return (int,obj)
 
 -- assuming that we are starting outside of all the objects in the scene
-simulate :: (Shape a, Show a) =>
-         MWC.GenIO -- random number generator
-         -> HashTable (Int, Int, Int) Float -- map to update
+simulate :: (Shape a, Show a)
+         => GenST s -- random number generator
+         -> MutableImage s Pixel8
          -> CVec3 -- source
          -> BVHTree a -- scene
-         -> IO () -- updates to the map
-simulate gen intensities source scene = do
+         -> ST s () -- updates to the image
+simulate gen image source scene = do
     dir <- randomDir gen
     let n = MkNeutron {ray = MkRay source dir, inside = Nothing}
 
     -- TODO: ugly
-    -- putStrLn "neutron:"
-    nil <- runMaybeT $ simulate' gen intensities n scene
+    nil <- runMaybeT $ simulate' gen image n scene
     return ()
 
 -- ugly helper
@@ -67,16 +62,14 @@ pointOnRay (MkRay o d) n = o <+> (d .^ n)
 
 -- the neutron can start anywhere
 simulate' :: (Shape a, Show a)
-          => MWC.GenIO -- random number generator
-          -> HashTable (Int, Int, Int) Float -- map to update
+          => MWC.GenST s -- random number generator
+          -> MutableImage s Pixel8
           -> Neutron a -- neutron
           -> BVHTree a -- scene
-          -> MaybeT IO () -- (possible) updates to the
-simulate' gen intensities n scene = do
+          -> MaybeT (ST s) () -- (possible) updates to the image
+simulate' gen image n scene = do
     -- find the intersection and object intersected
-    -- lift $ print $ "getting intersection for " ++ show n
-    (int,obj) <- liftMaybe $ getIntersection n scene
-    -- lift $ print "got intersection"
+    (int,obj) <- MaybeT . return $ getIntersection n scene
 
     -- TODO: god-awful
     let mat = let o = inside n in if o == Nothing then _air_ else let (Just ob) = o in getMat ob
@@ -91,29 +84,30 @@ simulate' gen intensities n scene = do
     if distanceCovered < getDist int
     -- there was a collision
     then do
-        -- lift $ putStrLn $ "collision in " ++ show mat
-        -- lift $ putStrLn $ "distanceCovered: " ++ show distanceCovered
         let colPoint = pointOnRay (ray n) distanceCovered
         r1 <- uniform gen
 
         if (sigmaScat / sigmaTot) > r1
         -- scattering
         then do
-            -- lift $ putStrLn "- scattering"
-            lift $ addToVolume intensities colPoint 0.1 -- TODO: actual intensity
+            lift $ addToImage image colPoint 25 -- TODO: actual intensity
 
             newDir <- lift $ randomDir gen -- TODO: actual new direction
             let newN = MkNeutron {ray = MkRay colPoint newDir, inside = (inside n)}
 
-            simulate' gen intensities newN scene
+            simulate' gen image newN scene
         -- absorbed
         else do
-            -- lift $ putStrLn "- absorbed"
-            lift $ addToVolume intensities colPoint 0.1 -- TODO: actual intensity
+            lift $ addToImage image colPoint 25 -- TODO: actual intensity
     -- move into next object
     else do
-        -- lift $ putStrLn "moving into next object"
         -- TODO: replace with global epsilon
         let newP = pointOnRay (MkRay (getPoint int) (getDir (ray n))) 0.0001
             newN = MkNeutron {ray = MkRay (newP) (getDir (ray n)), inside = Just obj}
-        simulate' gen intensities newN scene
+        simulate' gen image newN scene
+
+addToImage :: MutableImage s Pixel8 -> CVec3 -> Pixel8 -> ST s ()
+addToImage img pnt = writePixel img iX iY
+    where (x,y,z) = toXYZ pnt
+          iX = round x
+          iY = round (y * z)
