@@ -29,8 +29,6 @@ dependencies:
 - text
 - transformers
 - JuicyPixels
-- hashtables
-- hashable
 - tasty
 - tasty-hunit
 - tasty-quickcheck

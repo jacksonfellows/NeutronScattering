@@ -1,8 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Tests.Sphere
-    ( tests
-    ) where
+    ( tests) where
 
 import           Data.Vec3
 import           Test.Tasty
@@ -38,7 +37,7 @@ quadPropertyTests = testGroup "Property Tests"
         \eqa -> isAscending $ solveQuadratic (eqa :: (Double, Double, Double))
     ]
 
-intersectionTests = testGroup "intersection" [intUnitTests, intPropertyTests]
+intersectionTests = testGroup "intersect" [intUnitTests, intPropertyTests]
 
 intUnitTests = testGroup "Unit Tests"
     [ testCase "No intersection" $
@@ -66,7 +65,6 @@ instance QC.Arbitrary GuaranteedIntersection where
         Positive radius <- arbitrary
         let dir = if center == origin then (CVec3 0 0 1) else center <-> origin
         return $ GuaranteedIntersection (MkRay origin (normalize dir)) (MkSphere center radius)
-
 
 intPropertyTests = testGroup "Property Tests"
     [ QC.testProperty "Rays and spheres constructed to intersect always do" $
