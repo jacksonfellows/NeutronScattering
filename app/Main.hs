@@ -59,12 +59,13 @@ main = do
 
     img <- MWC.withSystemRandom . asGenST $ \gen -> do
         img <- createMutableImage width (height * depth) 0
-        let adder = addToImage img ((minX,maxX),(minY,maxY),(minZ,maxZ)) (width,height,depth)
 
+        let adder = addToImage img ((minX,maxX),(minY,maxY),(minZ,maxZ)) (width,height,depth)
         replicateM_ (read n) $ simulate gen adder source scene
+
         unsafeFreezeImage img
 
-    -- cut this big image into slices that can been used by slicer
+    -- cut this big image into slices that can be used by slicer
     let dat = imageData img
         step = V.length dat `div` depth
         slices = [ Image width height (V.slice i step dat) | i <- [0,step..(V.length dat - 1)] ]
