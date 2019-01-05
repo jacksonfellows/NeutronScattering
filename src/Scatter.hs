@@ -5,6 +5,7 @@ module Scatter
     , Material(..)
     , Object(..)
     , simulate
+    , SimState(..)
     -- for debugging
     , getIntersection
     , closestIntersection
@@ -14,6 +15,7 @@ import           Codec.Picture.Types
 import           Control.Monad.ST
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
+import           Data.STRef
 import           Data.Vec3
 import           System.Random.MWC         as MWC
 
@@ -49,14 +51,19 @@ getIntersection n@(MkNeutron {ray, inside}) objs
         int <- ray `intersect` (getShape obj)
         return (int,obj)
 
+data SimState s = MkSimState
+    { getGen        :: MWC.GenST s
+    , getAdder      :: CVec3 -> Pixel8 -> ST s ()
+    , numCollisions :: STRef s Int
+    }
+
 -- assuming that we are starting outside of all the objects in the scene
 simulate :: (Shape a)
-         => GenST s -- random number generator
-         -> (CVec3 -> Pixel8 -> ST s ())
+         => SimState s
          -> CVec3 -- source
          -> [Object a] -- scene
          -> ST s () -- updates to the image
-simulate gen addToImage source scene = do
+simulate state@(MkSimState gen _ _) source scene = do
     dir <- randomDir gen
     -- let n = MkNeutron {ray = MkRay source dir, inside = Nothing}
     -- TODO: check if we are inside an object
@@ -66,7 +73,7 @@ simulate gen addToImage source scene = do
     let n = MkNeutron {ray = MkRay source dir, inside = Just $ head scene}
 
     -- TODO: ugly
-    nil <- runMaybeT $ simulate' gen addToImage n scene
+    _ <- runMaybeT $ simulate' state n scene
     return ()
 
 -- ugly helper
@@ -75,12 +82,11 @@ pointOnRay (MkRay o d) n = o <+> (d .^ n)
 
 -- the neutron can start anywhere
 simulate' :: (Shape a)
-          => MWC.GenST s -- random number generator
-          -> (CVec3 -> Pixel8 -> ST s ())
+          => SimState s
           -> Neutron a -- neutron
           -> [Object a] -- scene
           -> MaybeT (ST s) () -- (possible) updates to the image
-simulate' gen addToImage n scene = do
+simulate' state@(MkSimState gen addToImage numCols) n scene = do
     -- find the intersection and object intersected
     (int,obj) <- MaybeT . return $ getIntersection n scene
 
@@ -97,6 +103,8 @@ simulate' gen addToImage n scene = do
     if distanceCovered < getDist int
     -- there was a collision
     then do
+        lift $ modifySTRef numCols (+1)
+
         let colPoint = pointOnRay (ray n) distanceCovered
         r1 <- uniform gen
 
@@ -108,7 +116,7 @@ simulate' gen addToImage n scene = do
             newDir <- lift $ randomDir gen -- TODO: actual new direction
             let newN = MkNeutron {ray = MkRay colPoint newDir, inside = (inside n)}
 
-            simulate' gen addToImage newN scene
+            simulate' state newN scene
         -- absorbed
         else do
             lift $ addToImage colPoint 25 -- TODO: actual intensity
@@ -117,4 +125,4 @@ simulate' gen addToImage n scene = do
         -- TODO: replace with global epsilon?
         let newP = pointOnRay (MkRay (getPoint int) (getDir (ray n))) 1e-3
             newN = MkNeutron {ray = MkRay (newP) (getDir (ray n)), inside = Just obj}
-        simulate' gen addToImage newN scene
+        simulate' state newN scene

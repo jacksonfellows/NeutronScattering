@@ -7,6 +7,7 @@ import           Codec.Picture.Types
 import           Control.Monad        (replicateM_, when)
 import           Control.Monad.ST
 import           Data.Attoparsec.Text
+import           Data.STRef
 import           Data.Text.IO         (readFile)
 import           Data.Vec3
 import qualified Data.Vector.Storable as V
@@ -63,13 +64,17 @@ main = do
     putStrLn "scattering..."
     start <- getCPUTime
 
-    img <- MWC.withSystemRandom . asGenST $ \gen -> do
+    (img, numCols) <- MWC.withSystemRandom . asGenST $ \gen -> do
         img <- createMutableImage width (height * depth) 0
-
         let adder = addToImage img ((minX,maxX),(minY,maxY),(minZ,maxZ)) (width,height,depth)
-        replicateM_ n $ simulate gen adder source scene
 
-        unsafeFreezeImage img
+        numColsRef <- newSTRef 0
+        let simState = MkSimState gen adder numColsRef
+        replicateM_ n $ simulate simState source scene
+
+        numCols <- readSTRef numColsRef
+        frozen <- unsafeFreezeImage img
+        return (frozen, numCols)
 
     end <- getCPUTime
     let diff = (fromIntegral (end - start)) / (10^12)
@@ -77,9 +82,10 @@ main = do
     putStrLn "...finished"
 
     putStrLn ""
+    putStrLn $ printf "Scattering time: %0.3f seconds" (diff :: Double)
     putStrLn $ printf "Total # of triangles: %d" numTris
     putStrLn $ printf "# of neutrons: %d" n
-    putStrLn $ printf "Scattering time: %0.3f seconds" (diff :: Double)
+    putStrLn $ printf "# of collisions (scattering and absorption): %d" numCols
     putStrLn ""
 
     -- cut this big image into slices that can be used by slicer
