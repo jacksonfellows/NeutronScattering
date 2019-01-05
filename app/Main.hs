@@ -47,7 +47,7 @@ main = do
 
     gen <- MWC.create -- fixed generator
 
-    (n:_) <- getArgs
+    n <- getArgs >>= return . read . head
 
     let (minX,maxX) = (-50,50)
         (minY,maxY) = (-50,50)
@@ -61,7 +61,7 @@ main = do
         img <- createMutableImage width (height * depth) 0
 
         let adder = addToImage img ((minX,maxX),(minY,maxY),(minZ,maxZ)) (width,height,depth)
-        replicateM_ (read n) $ simulate gen adder source scene
+        replicateM_ n $ simulate gen adder source scene
 
         unsafeFreezeImage img
 
