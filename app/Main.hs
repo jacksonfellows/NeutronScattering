@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Main where
 
 import           Codec.Picture
@@ -10,6 +12,7 @@ import           Data.Vec3
 import qualified Data.Vector.Storable as V
 import qualified Data.Vector.Unboxed  as U
 import           Graphics.Formats.STL
+import           System.CPUTime
 import           System.Environment
 import           System.Random.MWC    as MWC
 import           Text.Printf          (printf)
@@ -36,14 +39,14 @@ main :: IO ()
 main = do
     -- TODO: move all model reading to Mesh.hs
     bunny <- Data.Text.IO.readFile "bunny.stl"
-    putStrLn "read bunny"
+    putStrLn "reading model..."
     let res = parseOnly stlParser bunny
         Right tris = fmap triangles res
 
         mesh = fromTris tris
         scene = [MkObject mesh _paraffin_]
 
-    putStrLn $ "# of triangles: " ++ show (U.length (getTris mesh))
+        !numTris = U.length $ getTris mesh
 
     gen <- MWC.create -- fixed generator
 
@@ -57,6 +60,9 @@ main = do
         height = maxY - minY
         depth = maxZ - minZ
 
+    putStrLn "scattering..."
+    start <- getCPUTime
+
     img <- MWC.withSystemRandom . asGenST $ \gen -> do
         img <- createMutableImage width (height * depth) 0
 
@@ -64,6 +70,17 @@ main = do
         replicateM_ n $ simulate gen adder source scene
 
         unsafeFreezeImage img
+
+    end <- getCPUTime
+    let diff = (fromIntegral (end - start)) / (10^12)
+
+    putStrLn "...finished"
+
+    putStrLn ""
+    putStrLn $ printf "Total # of triangles: %d" numTris
+    putStrLn $ printf "# of neutrons: %d" n
+    putStrLn $ printf "Scattering time: %0.3f seconds" (diff :: Double)
+    putStrLn ""
 
     -- cut this big image into slices that can be used by slicer
     let dat = imageData img
