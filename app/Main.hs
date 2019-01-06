@@ -13,8 +13,8 @@ import           Data.Vec3
 import qualified Data.Vector.Storable       as V
 import           GHC.Float                  (float2Double)
 import           Graphics.Formats.STL
-import           System.CPUTime
-import           System.Environment
+import           System.CPUTime (getCPUTime)
+import           System.Environment         (getArgs)
 import           System.Random.MWC          as MWC
 import           Text.Printf                (printf)
 
@@ -49,8 +49,6 @@ main = do
         !mesh = build $ map toVecs tris :: NaiveStructure
 
         scene = [MkObject (AnyIntersectable mesh) _paraffin_]
-
-    gen <- MWC.create -- fixed generator
 
     n <- getArgs >>= return . read . head
 
