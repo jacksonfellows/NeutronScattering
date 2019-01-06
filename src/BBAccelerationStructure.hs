@@ -16,10 +16,10 @@ import           AccelerationStructure
 import           Ray
 import           Triangle
 
-newtype BBStructure = MkN (V.Vector Triangle)
+data BBStructure = MkBB !(V.Vector Triangle) !AABB
 
-getAABB :: BBStructure -> AABB
-getAABB (MkN !tris) = MkAABB low high
+getAABB :: V.Vector Triangle -> AABB
+getAABB !tris = MkAABB low high
     where (low,high) = V.foldl'
               (\(!low,!high) (a,b,c) -> ( zipMin low $ zipMin a $ zipMin b c
                                         , zipMax high $ zipMax a $ zipMax b c ))
@@ -33,17 +33,20 @@ getAABB (MkN !tris) = MkAABB low high
 
 -- TODO: no more pretty Maybe monad code :(
 instance AccelerationStructure BBStructure where
-    ray@(MkRay !o !d) `intersect` (MkN !tris) =
-        let (posT, !numChecked, !numHit) = V.foldl'
-                (\(!closest,!checked,!hit) tri -> case (ray `intersectTri` tri) of
-                    Just int -> case closest of
-                        Just m  -> (Just (min m int), checked+1, hit+1)
-                        Nothing -> (Just int, checked+1, hit+1)
-                    Nothing -> (closest, checked+1, hit))
-                (Nothing, 0, 0) tris
+    ray@(MkRay !o !d) `intersect` (MkBB !tris !aabb) =
+        if ray `intersects` aabb then
+            let (posT, !numChecked, !numHit) = V.foldl'
+                    (\(!closest,!checked,!hit) tri -> case (ray `intersectTri` tri) of
+                        Just int -> case closest of
+                            Just m  -> (Just (min m int), checked+1, hit+1)
+                            Nothing -> (Just int, checked+1, hit+1)
+                        Nothing -> (closest, checked+1, hit))
+                    (Nothing, 0, 0) tris
 
-        in case posT of
-            Just t -> (Just (MkIntersection (o <+> (d .^ t)) t), numChecked, numHit)
-            Nothing -> (Nothing, numChecked, numHit)
+            in case posT of
+                Just t -> (Just (MkIntersection (o <+> (d .^ t)) t), numChecked, numHit)
+                Nothing -> (Nothing, numChecked, numHit)
+        else (Nothing, 0, 0)
 
-    build = MkN . V.fromList
+    build tris = MkBB vTris (getAABB vTris)
+        where vTris = V.fromList tris

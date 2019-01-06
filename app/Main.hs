@@ -90,12 +90,6 @@ main = do
     putStrLn $ printf "# of ray-triangle intersections: %d" (getNumInts stats)
     putStrLn ""
 
-    startAABB <- getCPUTime
-    print $ getAABB mesh
-    endAABB <- getCPUTime
-    let diffAABB = (fromIntegral (endAABB - startAABB)) / (10^12)
-    putStrLn $ printf "Time to make AABB: %0.3f seconds" (diffAABB :: Double)
-
     -- cut this big image into slices that can be used by slicer
     let dat = imageData img
         step = V.length dat `div` depth
