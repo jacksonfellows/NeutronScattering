@@ -3,10 +3,10 @@ module Object
     , Material(..)
     ) where
 
-import           Shape
+import           AccelerationStructure
 
 data Object = MkObject
-    { getShape :: Shape
+    { getShape :: Intersectable
     , getMat   :: Material
     }
 

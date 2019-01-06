@@ -19,8 +19,9 @@ import           Data.STRef
 import           Data.Vec3
 import           System.Random.MWC         as MWC
 
+import           AccelerationStructure
 import           Object
-import           Shape
+import           Ray
 
 _air_ = MkMat { getSigmaScat = const 0, getSigmaTot = const 0, getName = "air" }
 
@@ -41,14 +42,14 @@ closestIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
 closestIntersection MkNeutron {ray} objs
     | null ints = Nothing
     | otherwise = let (Just int,obj) = minimum ints in Just (int,obj)
-    where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\MkObject {getShape=shape} -> ray `intersect` shape) objs) objs
+    where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\MkObject {getShape=shape} -> ray `getIntersection` shape) objs) objs
 
-getIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
-getIntersection n@(MkNeutron {ray, inside}) objs
+intersectScene :: Neutron -> [Object] -> Maybe (Intersection, Object)
+intersectScene n@(MkNeutron {ray, inside}) objs
     | inside == Nothing = closestIntersection n objs -- outside of all objects
     | otherwise = do
         obj <- inside
-        int <- ray `intersect` (getShape obj)
+        int <- ray `getIntersection` (getShape obj)
         return (int,obj)
 
 data SimState s = MkSimState
@@ -86,7 +87,7 @@ simulate' :: SimState s
           -> MaybeT (ST s) () -- (possible) updates to the image
 simulate' state@(MkSimState gen addToImage numCols) n scene = do
     -- find the intersection and object intersected
-    (int,obj) <- MaybeT . return $ getIntersection n scene
+    (int,obj) <- MaybeT . return $ intersectScene n scene
 
     -- TODO: god-awful
     let mat = let o = inside n in if o == Nothing then _air_ else let (Just ob) = o in getMat ob

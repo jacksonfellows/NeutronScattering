@@ -4,25 +4,24 @@ module Main where
 
 import           Codec.Picture
 import           Codec.Picture.Types
-import           Control.Monad        (replicateM_, when)
+import           Control.Monad              (replicateM_, when)
 import           Control.Monad.ST
 import           Data.Attoparsec.Text
 import           Data.STRef
-import           Data.Text.IO         (readFile)
+import           Data.Text.IO               (readFile)
 import           Data.Vec3
-import qualified Data.Vector.Storable as V
-import qualified Data.Vector.Unboxed  as U
+import qualified Data.Vector.Storable       as V
+import qualified Data.Vector.Unboxed        as U
+import           GHC.Float                  (float2Double)
 import           Graphics.Formats.STL
 import           System.CPUTime
 import           System.Environment
-import           System.Random.MWC    as MWC
-import           Text.Printf          (printf)
+import           System.Random.MWC          as MWC
+import           Text.Printf                (printf)
 
-import           AABB
-import           Mesh
-import Shape
+import           AccelerationStructure
+import           NaiveAccelerationStructure
 import           Scatter
-import           Sphere
 
 showTriangle (Triangle norm verts) = "norm: " ++ (show norm) ++ ", verts: " ++ (show verts)
 
@@ -45,10 +44,11 @@ main = do
     let res = parseOnly stlParser bunny
         Right tris = fmap triangles res
 
-        mesh = fromTris tris
-        scene = [MkObject (AnyShape mesh) _paraffin_]
+        toVecs (Triangle _ (a,b,c)) = (toVec a, toVec b, toVec c)
+        toVec (x,y,z) = fromXYZ (float2Double x, float2Double y, float2Double z)
+        !mesh = build $ map toVecs tris :: NaiveStructure
 
-        !numTris = U.length $ getTris mesh
+        scene = [MkObject (AnyIntersectable mesh) _paraffin_]
 
     gen <- MWC.create -- fixed generator
 
@@ -84,7 +84,7 @@ main = do
 
     putStrLn ""
     putStrLn $ printf "Scattering time: %0.3f seconds" (diff :: Double)
-    putStrLn $ printf "Total # of triangles: %d" numTris
+    -- putStrLn $ printf "Total # of triangles: %d" numTris
     putStrLn $ printf "# of neutrons: %d" n
     putStrLn $ printf "# of collisions (scattering and absorption): %d" numCols
     putStrLn ""
