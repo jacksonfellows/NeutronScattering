@@ -11,7 +11,6 @@ import           Data.STRef
 import           Data.Text.IO               (readFile)
 import           Data.Vec3
 import qualified Data.Vector.Storable       as V
-import qualified Data.Vector.Unboxed        as U
 import           GHC.Float                  (float2Double)
 import           Graphics.Formats.STL
 import           System.CPUTime
@@ -43,6 +42,7 @@ main = do
     putStrLn "reading model..."
     let res = parseOnly stlParser bunny
         Right tris = fmap triangles res
+        numTris = length tris
 
         toVecs (Triangle _ (a,b,c)) = (toVec a, toVec b, toVec c)
         toVec (x,y,z) = fromXYZ (float2Double x, float2Double y, float2Double z)
@@ -84,7 +84,7 @@ main = do
 
     putStrLn ""
     putStrLn $ printf "Scattering time: %0.3f seconds" (diff :: Double)
-    -- putStrLn $ printf "Total # of triangles: %d" numTris
+    putStrLn $ printf "Total # of triangles: %d" numTris
     putStrLn $ printf "# of neutrons: %d" n
     putStrLn $ printf "# of collisions (scattering and absorption): %d" numCols
     putStrLn ""
