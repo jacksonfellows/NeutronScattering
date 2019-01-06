@@ -24,9 +24,9 @@ import           Shape
 
 _air_ = MkMat { getSigmaScat = const 0, getSigmaTot = const 0, getName = "air" }
 
-data Neutron a = MkNeutron
+data Neutron = MkNeutron
     { ray    :: Ray
-    , inside :: Maybe (Object a)
+    , inside :: Maybe Object
     } deriving (Show)
 
 randomDir :: MWC.GenST s -> ST s CVec3
@@ -37,13 +37,13 @@ randomDir gen = do
         phi = acos $ r1 * 2 - 1
     return $ CVec3 (cos theta * sin phi) (sin theta * sin phi) (cos phi)
 
-closestIntersection :: (Shape a) => Neutron a -> [Object a] -> Maybe (Intersection, Object a)
+closestIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
 closestIntersection MkNeutron {ray} objs
     | null ints = Nothing
     | otherwise = let (Just int,obj) = minimum ints in Just (int,obj)
     where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\MkObject {getShape=shape} -> ray `intersect` shape) objs) objs
 
-getIntersection :: (Shape a) => Neutron a -> [Object a] -> Maybe (Intersection, Object a)
+getIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
 getIntersection n@(MkNeutron {ray, inside}) objs
     | inside == Nothing = closestIntersection n objs -- outside of all objects
     | otherwise = do
@@ -58,10 +58,9 @@ data SimState s = MkSimState
     }
 
 -- assuming that we are starting outside of all the objects in the scene
-simulate :: (Shape a)
-         => SimState s
+simulate :: SimState s
          -> CVec3 -- source
-         -> [Object a] -- scene
+         -> [Object] -- scene
          -> ST s () -- updates to the image
 simulate state@(MkSimState gen _ _) source scene = do
     dir <- randomDir gen
@@ -81,10 +80,9 @@ pointOnRay :: Ray -> Double -> CVec3
 pointOnRay (MkRay o d) n = o <+> (d .^ n)
 
 -- the neutron can start anywhere
-simulate' :: (Shape a)
-          => SimState s
-          -> Neutron a -- neutron
-          -> [Object a] -- scene
+simulate' :: SimState s
+          -> Neutron -- neutron
+          -> [Object] -- scene
           -> MaybeT (ST s) () -- (possible) updates to the image
 simulate' state@(MkSimState gen addToImage numCols) n scene = do
     -- find the intersection and object intersected

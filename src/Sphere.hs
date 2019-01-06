@@ -33,8 +33,8 @@ solveQuadratic (a, b, c)
     where
         discriminant = b*b - 4*a*c
 
-instance Shape Sphere where
-    (MkRay o d) `intersect` (MkSphere center r)
+instance IntersectionPrimitive Sphere where
+    (MkRay o d) `intersectPrim` (MkSphere center r)
         | None <- solution = Nothing
         | (Root t) <- solution = ans t
         | (Roots t0 t1) <- solution = ans $ if t0 < 0 then t1 else t0
@@ -47,5 +47,5 @@ instance Shape Sphere where
                       then Just $ MkIntersection (o <+> (d .^ t)) t
                       else Nothing
 
-    buildAABB (MkSphere c r) = MkAABB (c <-> rVec) (c <+> rVec)
+    buildAABBPrim (MkSphere c r) = MkAABB (c <-> rVec) (c <+> rVec)
         where rVec = CVec3 r r r

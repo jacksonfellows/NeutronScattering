@@ -20,6 +20,7 @@ import           Text.Printf          (printf)
 
 import           AABB
 import           Mesh
+import Shape
 import           Scatter
 import           Sphere
 
@@ -45,7 +46,7 @@ main = do
         Right tris = fmap triangles res
 
         mesh = fromTris tris
-        scene = [MkObject mesh _paraffin_]
+        scene = [MkObject (AnyShape mesh) _paraffin_]
 
         !numTris = U.length $ getTris mesh
 

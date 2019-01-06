@@ -20,12 +20,12 @@ data Mesh = MkMesh { getTris :: V.Vector (CVec3,CVec3,CVec3) }
 maybeMin :: Ord a => Maybe a -> Maybe a -> Maybe a
 maybeMin a b = min <$> a <*> b <|> a <|> b
 
-instance Shape Mesh where
-    ray@(MkRay o d) `intersect` (MkMesh vecs) = do
+instance IntersectionPrimitive Mesh where
+    ray@(MkRay o d) `intersectPrim` (MkMesh vecs) = do
         t <- V.foldl (\min tri -> maybeMin min (ray `intersectTri` tri)) Nothing vecs
         return $ MkIntersection (o <+> (d .^ t)) t
 
-    buildAABB _ = undefined
+    buildAABBPrim _ = undefined
 
 -- moller-trumbore algorithm (copied from internet)
 -- TODO: make it more haskelly (or, make it less haskelly be removing Maybe?)

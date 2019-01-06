@@ -1,5 +1,9 @@
+{-# LANGUAGE ExistentialQuantification #-}
+
 module Shape
     ( Shape(..)
+    , intersect
+    , IntersectionPrimitive(..)
     , Ray(..)
     , AABB(..)
     , Intersection(..)
@@ -10,9 +14,14 @@ import           Data.Vec3
 import           AABB
 import           Ray
 
-class Shape a where
-    intersect :: Ray -> a -> Maybe Intersection
-    buildAABB :: a -> AABB
+data Shape = forall a. IntersectionPrimitive a => AnyShape a
+
+intersect :: Ray -> Shape -> Maybe Intersection
+ray `intersect` (AnyShape shape) = ray `intersectPrim` shape
+
+class IntersectionPrimitive a where
+    intersectPrim :: Ray -> a -> Maybe Intersection
+    buildAABBPrim :: a -> AABB
 
 data Intersection = MkIntersection
     { getPoint :: CVec3

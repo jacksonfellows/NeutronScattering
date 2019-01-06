@@ -3,17 +3,21 @@ module Object
     , Material(..)
     ) where
 
-data Object a = MkObject
-    { getShape :: !a
+import           Shape
+
+data Object = MkObject
+    { getShape :: Shape
     , getMat   :: Material
-    } deriving (Show)
+    }
+
+instance Show Object where show (MkObject _ m) = show m
 
 -- ugly hack to allow me to sort (Intersection,Object) pairs
 -- a runtime error will be thrown if it two objects are actually compared
-instance Eq (Object a) where
+instance Eq Object where
     _ == _ = undefined
 
-instance Ord (Object a) where
+instance Ord Object where
     _ <= _ = undefined
 
 data Material = MkMat
