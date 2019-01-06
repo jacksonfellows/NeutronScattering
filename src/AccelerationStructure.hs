@@ -15,11 +15,12 @@ import           Triangle
 
 data Intersectable = forall a. AccelerationStructure a => AnyIntersectable a
 
-getIntersection :: Ray -> Intersectable -> Maybe Intersection
+getIntersection :: Ray -> Intersectable -> (Maybe Intersection, Int, Int)
 ray `getIntersection` (AnyIntersectable struct) = ray `intersect` struct
 
 class AccelerationStructure a where
-    intersect :: Ray -> a -> Maybe Intersection
+    intersect :: Ray -> a -> (Maybe Intersection, Int, Int)
+    -- (intersection, numTrisChecked, numTrisHit)
     build :: [Triangle] -> a
 
 data Intersection = MkIntersection

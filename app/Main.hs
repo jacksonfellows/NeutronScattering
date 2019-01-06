@@ -13,7 +13,7 @@ import           Data.Vec3
 import qualified Data.Vector.Storable       as V
 import           GHC.Float                  (float2Double)
 import           Graphics.Formats.STL
-import           System.CPUTime (getCPUTime)
+import           System.CPUTime             (getCPUTime)
 import           System.Environment         (getArgs)
 import           System.Random.MWC          as MWC
 import           Text.Printf                (printf)
@@ -63,17 +63,17 @@ main = do
     putStrLn "scattering..."
     start <- getCPUTime
 
-    (img, numCols) <- MWC.withSystemRandom . asGenST $ \gen -> do
+    (img, stats) <- MWC.withSystemRandom . asGenST $ \gen -> do
         img <- createMutableImage width (height * depth) 0
         let adder = addToImage img ((minX,maxX),(minY,maxY),(minZ,maxZ)) (width,height,depth)
 
-        numColsRef <- newSTRef 0
-        let simState = MkSimState gen adder numColsRef
+        stats <- emptyStats
+        let simState = MkSimState gen adder stats
         replicateM_ n $ simulate simState source scene
 
-        numCols <- readSTRef numColsRef
-        frozen <- unsafeFreezeImage img
-        return (frozen, numCols)
+        frozenStats <- freezeStats stats
+        frozenImg <- unsafeFreezeImage img
+        return (frozenImg, frozenStats)
 
     end <- getCPUTime
     let diff = (fromIntegral (end - start)) / (10^12)
@@ -82,9 +82,12 @@ main = do
 
     putStrLn ""
     putStrLn $ printf "Scattering time: %0.3f seconds" (diff :: Double)
-    putStrLn $ printf "Total # of triangles: %d" numTris
+    putStrLn $ printf "# of triangles: %d" numTris
     putStrLn $ printf "# of neutrons: %d" n
-    putStrLn $ printf "# of collisions (scattering and absorption): %d" numCols
+    putStrLn $ printf "# of scattering events: %d" (getNumScattered stats)
+    putStrLn $ printf "# of absorption events: %d" (getNumAbsorbed stats)
+    putStrLn $ printf "# of ray-triangle tests: %d" (getNumTests stats)
+    putStrLn $ printf "# of ray-triangle intersections: %d" (getNumInts stats)
     putStrLn ""
 
     -- cut this big image into slices that can be used by slicer

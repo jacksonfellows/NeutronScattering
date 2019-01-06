@@ -1,4 +1,5 @@
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE NamedFieldPuns  #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Scatter
     ( Neutron(..)
@@ -6,12 +7,16 @@ module Scatter
     , Object(..)
     , simulate
     , SimState(..)
+    , emptyStats
+    , freezeStats
+    , FrozenStats(..)
     -- for debugging
     , getIntersection
-    , closestIntersection
+    -- , closestIntersection
     ) where
 
 import           Codec.Picture.Types
+import           Control.Applicative
 import           Control.Monad.ST
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
@@ -38,25 +43,57 @@ randomDir gen = do
         phi = acos $ r1 * 2 - 1
     return $ CVec3 (cos theta * sin phi) (sin theta * sin phi) (cos phi)
 
-closestIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
-closestIntersection MkNeutron {ray} objs
-    | null ints = Nothing
-    | otherwise = let (Just int,obj) = minimum ints in Just (int,obj)
-    where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\MkObject {getShape=shape} -> ray `getIntersection` shape) objs) objs
+-- closestIntersection :: Neutron -> [Object] -> Maybe (Intersection, Object)
+-- closestIntersection MkNeutron {ray} objs
+--     | null ints = Nothing
+--     | otherwise = let (Just int,obj) = minimum ints in Just (int,obj)
+--     where ints = filter (\(int,_) -> int /= Nothing) $ zip (map (\MkObject {getShape=shape} -> ray `getIntersection` shape) objs) objs
 
-intersectScene :: Neutron -> [Object] -> Maybe (Intersection, Object)
-intersectScene n@(MkNeutron {ray, inside}) objs
-    | inside == Nothing = closestIntersection n objs -- outside of all objects
-    | otherwise = do
-        obj <- inside
-        int <- ray `getIntersection` (getShape obj)
-        return (int,obj)
+-- intersectScene :: Neutron -> [Object] -> Maybe (Intersection, Object)
+-- intersectScene n@(MkNeutron {ray, inside}) objs
+--     | inside == Nothing = closestIntersection n objs -- outside of all objects
+--     | otherwise = do
+--         obj <- inside
+--         int <- ray `getIntersection` (getShape obj)
+--         return (int,obj)
+
+-- JUST FOR TESTING WITH AN ONE-OBJECT SCENE!!
+intersectScene :: Neutron -> [Object] -> (Maybe (Intersection, Object), Int, Int)
+intersectScene n [obj] = let (int,checked,hit) = (ray n) `getIntersection` (getShape obj)
+                         in ((,) <$> int <*> (Just obj), checked, hit)
 
 data SimState s = MkSimState
-    { getGen        :: MWC.GenST s
-    , getAdder      :: CVec3 -> Pixel8 -> ST s ()
-    , numCollisions :: STRef s Int
+    { getGen   :: MWC.GenST s
+    , getAdder :: CVec3 -> Pixel8 -> ST s ()
+    , getStats :: Stats s
     }
+
+data Stats s = MkStats
+    { numScatteredRef, numAbsorbedRef, numTestsRef, numIntsRef :: STRef s Int }
+
+incNumScattered, incNumAbsorbed, incNumTests, incNumInts :: Stats s -> Int -> ST s ()
+incNumScattered stats n = modifySTRef' (numScatteredRef stats) (+n)
+incNumAbsorbed stats n  = modifySTRef' (numAbsorbedRef stats) (+n)
+incNumTests stats n     = modifySTRef' (numTestsRef stats) (+n)
+incNumInts stats n      = modifySTRef' (numIntsRef stats) (+n)
+
+emptyStats :: ST s (Stats s)
+emptyStats = do
+    scattered <- newSTRef 0
+    absorbed <- newSTRef 0
+    tests <- newSTRef 0
+    ints <- newSTRef 0
+    return $ MkStats scattered absorbed tests ints
+
+data FrozenStats = MkFrozenStats { getNumScattered, getNumAbsorbed, getNumTests, getNumInts :: !Int }
+
+freezeStats :: Stats s -> ST s FrozenStats
+freezeStats MkStats {..} = do
+    scattered <- readSTRef numScatteredRef
+    absorbed <- readSTRef numAbsorbedRef
+    tests <- readSTRef numTestsRef
+    ints <- readSTRef numIntsRef
+    return $ MkFrozenStats scattered absorbed tests ints
 
 -- assuming that we are starting outside of all the objects in the scene
 simulate :: SimState s
@@ -85,9 +122,13 @@ simulate' :: SimState s
           -> Neutron -- neutron
           -> [Object] -- scene
           -> MaybeT (ST s) () -- (possible) updates to the image
-simulate' state@(MkSimState gen addToImage numCols) n scene = do
+simulate' state@(MkSimState gen addToImage stats) n scene = do
     -- find the intersection and object intersected
-    (int,obj) <- MaybeT . return $ intersectScene n scene
+    let (intPair,tests,ints) = intersectScene n scene
+    lift $ incNumTests stats tests
+    lift $ incNumInts stats ints
+
+    (int,obj) <- MaybeT . return $ intPair
 
     -- TODO: god-awful
     let mat = let o = inside n in if o == Nothing then _air_ else let (Just ob) = o in getMat ob
@@ -102,14 +143,13 @@ simulate' state@(MkSimState gen addToImage numCols) n scene = do
     if distanceCovered < getDist int
     -- there was a collision
     then do
-        lift $ modifySTRef numCols (+1)
-
         let colPoint = pointOnRay (ray n) distanceCovered
         r1 <- uniform gen
 
         if (sigmaScat / sigmaTot) > r1
         -- scattering
         then do
+            lift $ incNumScattered stats 1
             lift $ addToImage colPoint 25 -- TODO: actual intensity
 
             newDir <- lift $ randomDir gen -- TODO: actual new direction
@@ -118,6 +158,7 @@ simulate' state@(MkSimState gen addToImage numCols) n scene = do
             simulate' state newN scene
         -- absorbed
         else do
+            lift $ incNumAbsorbed stats 1
             lift $ addToImage colPoint 25 -- TODO: actual intensity
     -- move into next object
     else do
