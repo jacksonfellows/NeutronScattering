@@ -15,6 +15,7 @@ import           GHC.Float                (float2Double)
 import           Graphics.Formats.STL
 import           System.CPUTime           (getCPUTime)
 import           System.Environment       (getArgs)
+import           System.IO
 import           System.Random.MWC        as MWC
 import           Text.Printf              (printf)
 
@@ -38,6 +39,8 @@ addToImage img ((minX,maxX),(minY,maxY),(minZ,maxZ)) (width,height,depth) pnt pi
 
 main :: IO ()
 main = do
+    hSetBuffering stdout LineBuffering
+
     -- TODO: move all model reading to Mesh.hs
     bunny <- Data.Text.IO.readFile "bunny.stl"
     putStrLn "reading model..."
@@ -91,8 +94,6 @@ main = do
     putStrLn $ printf "# of ray-triangle tests: %d" (getNumTests stats)
     putStrLn $ printf "# of ray-triangle intersections: %d" (getNumInts stats)
     putStrLn ""
-
-    -- TODO: flush stdout
 
     -- startBVH <- getCPUTime
     -- let !bvh = build mesh :: BVHStructure
