@@ -52,8 +52,6 @@ main = do
 
         scene = [MkObject (AnyIntersectable bvh) _paraffin_]
 
-    putStrLn $ "nodesContainChildren: " ++ show (nodesContainChildren bvh)
-
     n <- getArgs >>= return . read . head
 
     let (minX,maxX) = (-50,50)
