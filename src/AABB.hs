@@ -1,12 +1,20 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
+
 module AABB
     ( AABB(..)
     , intersects
     , union
     , contains
+    , containsPoint
+    , containsTri
+    , aabbFromTri
     ) where
 
 import           Data.Vec3
-import           Prelude   hiding (zipWith)
+import           Data.Vector.Unboxed.Deriving
+import           Prelude                      hiding (zipWith)
 
 import           Ray
 
@@ -14,6 +22,11 @@ data AABB = MkAABB
     { getMin :: CVec3
     , getMax :: CVec3
     } deriving (Show, Eq)
+
+derivingUnbox "AABB"
+    [t| AABB -> (CVec3, CVec3) |]
+    [| \ (MkAABB minBounds maxBounds) -> (minBounds, maxBounds) |]
+    [| \ (minBounds, maxBounds) -> MkAABB minBounds maxBounds |]
 
 intersects :: Ray -> AABB -> Bool
 (MkRay o d) `intersects` (MkAABB b0 b1)
@@ -33,3 +46,17 @@ union (MkAABB min0 max0) (MkAABB min1 max1) = MkAABB newMin newMax
 
 contains :: AABB -> AABB -> Bool
 a `contains` b = a == union a b
+
+containsPoint :: AABB -> CVec3 -> Bool
+(MkAABB (CVec3 minX minY minZ) (CVec3 maxX maxY maxZ)) `containsPoint` (CVec3 x y z) =
+    minX < x && x < maxX && minY < y && y < maxY && minZ < z && z < maxZ
+
+containsTri :: AABB -> (CVec3,CVec3,CVec3) -> Bool
+containsTri aabb (a,b,c) = aabb `containsPoint` a && aabb `containsPoint` b && aabb `containsPoint` c
+
+-- TODO: ugly
+aabbFromTri :: (CVec3,CVec3,CVec3) -> AABB
+aabbFromTri (a,b,c) = MkAABB (zipMin a (zipMin b c) <-> eps) (zipMax a (zipMax b c) <+> eps)
+    where zipMin = zipWith min
+          zipMax = zipWith max
+          eps = CVec3 1e-3 1e-3 1e-3

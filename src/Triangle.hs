@@ -1,13 +1,17 @@
 module Triangle
     ( Triangle
     , intersectTri
+    , getCentroid
     ) where
 
 import           Data.Vec3
 
-import Ray
+import           Ray
 
 type Triangle = (CVec3,CVec3,CVec3)
+
+getCentroid :: Triangle -> CVec3
+getCentroid (a,b,c) = (a <+> b <+> c) .^ (1/3)
 
 -- moller-trumbore algorithm (copied from internet)
 -- TODO: make it more haskelly (or, make it less haskelly be removing Maybe?)

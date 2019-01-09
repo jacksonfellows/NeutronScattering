@@ -4,22 +4,23 @@ module Main where
 
 import           Codec.Picture
 import           Codec.Picture.Types
-import           Control.Monad           (replicateM_, when)
+import           Control.Monad            (replicateM_, when)
 import           Control.Monad.ST
 import           Data.Attoparsec.Text
 import           Data.STRef
-import           Data.Text.IO            (readFile)
+import           Data.Text.IO             (readFile)
 import           Data.Vec3
-import qualified Data.Vector.Storable    as V
-import           GHC.Float               (float2Double)
+import qualified Data.Vector.Storable     as V
+import           GHC.Float                (float2Double)
 import           Graphics.Formats.STL
-import           System.CPUTime          (getCPUTime)
-import           System.Environment      (getArgs)
-import           System.Random.MWC       as MWC
-import           Text.Printf             (printf)
+import           System.CPUTime           (getCPUTime)
+import           System.Environment       (getArgs)
+import           System.Random.MWC        as MWC
+import           Text.Printf              (printf)
 
 import           AccelerationStructure
 import           BBAccelerationStructure
+import           BVHAccelerationStructure
 import           Scatter
 
 showTriangle (Triangle norm verts) = "norm: " ++ (show norm) ++ ", verts: " ++ (show verts)
@@ -46,9 +47,12 @@ main = do
 
         toVecs (Triangle _ (a,b,c)) = (toVec a, toVec b, toVec c)
         toVec (x,y,z) = fromXYZ (float2Double x, float2Double y, float2Double z)
-        !mesh = build $ map toVecs tris :: BBStructure
+        !mesh = map toVecs tris
+        !bvh = build mesh :: BVHStructure
 
-        scene = [MkObject (AnyIntersectable mesh) _paraffin_]
+        scene = [MkObject (AnyIntersectable bvh) _paraffin_]
+
+    putStrLn $ "nodesContainChildren: " ++ show (nodesContainChildren bvh)
 
     n <- getArgs >>= return . read . head
 
@@ -89,6 +93,13 @@ main = do
     putStrLn $ printf "# of ray-triangle tests: %d" (getNumTests stats)
     putStrLn $ printf "# of ray-triangle intersections: %d" (getNumInts stats)
     putStrLn ""
+
+    -- startBVH <- getCPUTime
+    -- let !bvh = build mesh :: BVHStructure
+    -- print bvh
+    -- endBVH <- getCPUTime
+    -- let diffBVH = (fromIntegral (endBVH - startBVH)) / (10^12)
+    -- putStrLn $ printf "Time to make BVH: %0.3f seconds" (diffBVH :: Double)
 
     -- cut this big image into slices that can be used by slicer
     let dat = imageData img
