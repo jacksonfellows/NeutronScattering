@@ -94,6 +94,8 @@ main = do
     putStrLn $ printf "# of ray-triangle intersections: %d" (getNumInts stats)
     putStrLn ""
 
+    -- TODO: flush stdout
+
     -- startBVH <- getCPUTime
     -- let !bvh = build mesh :: BVHStructure
     -- print bvh
