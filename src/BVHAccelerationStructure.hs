@@ -101,21 +101,23 @@ nodesContainChildren (BVHLeaf aabb tris) = all (containsTri aabb) tris
 containedByAABB :: AABB -> [BVHStructure] -> Bool
 containedByAABB aabb bvhs = all (contains aabb . getBVHAABB) bvhs
 
-ray `intersect'` (BVHNode !aabb !children) =
-    if ray `intersects` aabb
-    then foldl1' maybeMin $ map (intersect' ray) children
-    else Nothing
-ray@(MkRay !o !d) `intersect'` (BVHLeaf !aabb !tris) =
-    if ray `intersects` aabb
-    then let minDist = foldl1' maybeMin $ map (intersectTri ray) tris
-         in case minDist of
-            Just t  -> Just $ MkIntersection (o <+> (d .^ t)) t
-            Nothing -> Nothing
-    else Nothing
-
 -- TODO: no more pretty Maybe monad code :(
 instance AccelerationStructure BVHStructure where
-    ray `intersect` bvh = (ray `intersect'` bvh, 0, 0)
+    ray `intersect` (BVHNode !aabb !children) =
+        if ray `intersects` aabb
+        then foldl1' (\(closest,totChecked,totHit) (int,numChecked,numHit) ->
+            (maybeMin closest int, totChecked + numChecked, totHit + numHit))
+            $ map (intersect ray) children
+        else (Nothing, 0, 0)
+    ray@(MkRay !o !d) `intersect` (BVHLeaf !aabb !tris) =
+        if ray `intersects` aabb
+        then let (minDist,totChecked,totHit) = foldl' (\(minDist,totChecked,totHit) t ->
+                     (maybeMin minDist t, totChecked + 1, if t == Nothing then totHit else totHit + 1))
+                     (Nothing, 0, 0) $ map (intersectTri ray) tris
+             in case minDist of
+                 Just t  -> (Just $ MkIntersection (o <+> (d .^ t)) t, totChecked, totHit)
+                 Nothing -> (Nothing, totChecked, totHit)
+        else (Nothing, 0, 0)
 
     build !tris = buildBVHFromOctree octree trisVec aabbs
         where octree = foldl (\tree i -> insert tree i centroids) (createEmptyTree aabb) [0..V.length trisVec - 1]
