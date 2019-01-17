@@ -1,35 +1,26 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns          #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module NaiveAccelerationStructure
     ( NaiveStructure
     ) where
 
-import           Control.Applicative   ((<|>))
+import           Control.Applicative ((<|>))
 import           Data.Vec3
-import qualified Data.Vector.Unboxed   as V
+import qualified Data.Vector         as V
+import           Prelude             hiding (zipWith)
 
-import           AccelerationStructure
+import           AABB
+import           Intersect
 import           Ray
-import           Triangle
 
-newtype NaiveStructure = MkN (V.Vector Triangle)
+newtype NaiveStructure i = MkN (V.Vector i)
 
--- maybeMin :: Ord a => Maybe a -> Maybe a -> Maybe a
--- maybeMin a b = min <$> a <*> b <|> a <|> b
-
--- TODO: no more pretty Maybe monad code :(
-instance AccelerationStructure NaiveStructure where
-    ray@(MkRay !o !d) `intersect` (MkN !vecs) =
-        let (posT, !numChecked, !numHit) = V.foldl
-                (\(!closest,!checked,!hit) tri -> case (ray `intersectTri` tri) of
-                    Just int -> case closest of
-                        Just m  -> (Just (min m int), checked+1, hit+1)
-                        Nothing -> (Just int, checked+1, hit+1)
-                    Nothing -> (closest, checked+1, hit))
-                (Nothing, 0, 0) vecs
-
-        in case posT of
-            Just t -> (Just (MkIntersection (o <+> (d .^ t)) t), numChecked, numHit)
-            Nothing -> (Nothing, numChecked, numHit)
-
-    build = MkN . V.fromList
+instance IntersectionPrim i => AccelerationStructure NaiveStructure i where
+    (!ray) `intersect` (MkN !prims) = V.foldl1' maybeMinOnFst $ V.map
+        (\p -> (,) <$> ray `intersectPrim` p <*> return p) prims
+        where maybeMinOnFst a b = minFst <$> a <*> b <|> a <|> b
+              minFst a b = if fst a < fst b then a else b
+    construct = MkN . V.fromList
+    buildAABB (MkN !prims) = V.foldl1' union $ V.map buildAABBPrim prims

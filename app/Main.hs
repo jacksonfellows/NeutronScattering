@@ -4,29 +4,30 @@ module Main where
 
 import           Codec.Picture
 import           Codec.Picture.Types
-import           Control.Monad            (replicateM_, when)
+import           Control.Monad              (replicateM_, when)
 import           Control.Monad.ST
 import           Data.Attoparsec.Text
 import           Data.STRef
-import           Data.Text.IO             (readFile)
+import           Data.Text.IO               (readFile)
 import           Data.Vec3
-import qualified Data.Vector.Storable     as V
-import           GHC.Float                (float2Double)
-import           Graphics.Formats.STL
-import           System.CPUTime           (getCPUTime)
-import           System.Environment       (getArgs)
+import qualified Data.Vector.Storable       as V
+import           GHC.Float                  (float2Double)
+import qualified Graphics.Formats.STL       as STL
+import           System.CPUTime             (getCPUTime)
+import           System.Environment         (getArgs)
 import           System.IO
-import           System.Random.MWC        as MWC
-import           Text.Printf              (printf)
+import           System.Random.MWC          as MWC
+import           Text.Printf                (printf)
 
-import           AccelerationStructure
-import           BBAccelerationStructure
-import           BVHAccelerationStructure
+import           Intersect
+import           NaiveAccelerationStructure
+import           Object
 import           Scatter
+import           Triangle
 
-showTriangle (Triangle norm verts) = "norm: " ++ (show norm) ++ ", verts: " ++ (show verts)
+showTriangle (STL.Triangle norm verts) = "norm: " ++ (show norm) ++ ", verts: " ++ (show verts)
 
-source = CVec3 0 0 0
+source = CVec3 50 50 50
 _paraffin_ = MkMat { getSigmaScat = const 0.8, getSigmaTot = const 0.2, getName = "paraffin" }
 
 addToImage :: MutableImage s Pixel8 -> ((Int,Int),(Int,Int),(Int,Int)) -> (Int,Int,Int) -> CVec3 -> Pixel8 -> ST s ()
@@ -44,16 +45,16 @@ main = do
     -- TODO: move all model reading to Mesh.hs
     bunny <- Data.Text.IO.readFile "bunny.stl"
     putStrLn "reading model..."
-    let res = parseOnly stlParser bunny
-        Right tris = fmap triangles res
-        numTris = length tris
+    let res = parseOnly STL.stlParser bunny
+        Right tris = fmap STL.triangles res
+        !numTris = length tris
 
-        toVecs (Triangle _ (a,b,c)) = (toVec a, toVec b, toVec c)
+        toVecs (STL.Triangle _ (a,b,c)) = (toVec a, toVec b, toVec c)
         toVec (x,y,z) = fromXYZ (float2Double x, float2Double y, float2Double z)
-        !mesh = map toVecs tris
-        !bvh = build mesh :: BVHStructure
-
-        scene = [MkObject (AnyIntersectable bvh) _paraffin_]
+        !mesh = map (tri . toVecs) tris
+        !bvh = construct mesh :: NaiveStructure Triangle
+        !obj = object (AnyIntersectable bvh) _paraffin_
+        !scene = construct [obj] :: NaiveStructure Object
 
     n <- getArgs >>= return . read . head
 
@@ -74,7 +75,7 @@ main = do
 
         stats <- emptyStats
         let simState = MkSimState gen adder stats
-        replicateM_ n $ simulate simState source scene
+        replicateM_ n $ simulate simState source (AnyIntersectableScene scene)
 
         frozenStats <- freezeStats stats
         frozenImg <- unsafeFreezeImage img
@@ -91,8 +92,8 @@ main = do
     putStrLn $ printf "# of neutrons: %d" n
     putStrLn $ printf "# of scattering events: %d" (getNumScattered stats)
     putStrLn $ printf "# of absorption events: %d" (getNumAbsorbed stats)
-    putStrLn $ printf "# of ray-triangle tests: %d" (getNumTests stats)
-    putStrLn $ printf "# of ray-triangle intersections: %d" (getNumInts stats)
+    -- putStrLn $ printf "# of ray-triangle tests: %d" (getNumTests stats)
+    -- putStrLn $ printf "# of ray-triangle intersections: %d" (getNumInts stats)
     putStrLn ""
 
     -- startBVH <- getCPUTime
