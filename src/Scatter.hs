@@ -71,16 +71,17 @@ freezeStats MkStats {..} = do
 -- assuming that we are starting outside of all the objects in the scene
 simulate :: SimState s
          -> CVec3 -- source
+         -> Maybe Object -- object the neutron starts inside
          -> IntersectableScene Object -- scene
          -> ST s () -- updates to the image
-simulate state@(MkSimState gen _ _) source scene = do
+simulate state@(MkSimState gen _ _) source initialInside scene = do
     dir <- randomDir gen
     -- let n = MkNeutron {ray = MkRay source dir, inside = Nothing}
     -- TODO: check if we are inside an object
     -- I'm not implementing this right now because we might not need it
     -- For the bunny tests that I am doing, we always start inside the bunny,
     -- which is the only item in the scene
-    let n = MkNeutron {ray = MkRay source dir, inside = Nothing}
+    let n = MkNeutron {ray = MkRay source dir, inside = initialInside}
 
     -- TODO: ugly
     _ <- runMaybeT $ simulate' state n scene

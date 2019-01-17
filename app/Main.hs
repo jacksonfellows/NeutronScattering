@@ -4,30 +4,31 @@ module Main where
 
 import           Codec.Picture
 import           Codec.Picture.Types
-import           Control.Monad              (replicateM_, when)
+import           Control.Monad            (replicateM_, when)
 import           Control.Monad.ST
 import           Data.Attoparsec.Text
 import           Data.STRef
-import           Data.Text.IO               (readFile)
+import           Data.Text.IO             (readFile)
 import           Data.Vec3
-import qualified Data.Vector.Storable       as V
-import           GHC.Float                  (float2Double)
-import qualified Graphics.Formats.STL       as STL
-import           System.CPUTime             (getCPUTime)
-import           System.Environment         (getArgs)
+import qualified Data.Vector.Storable     as V
+import           GHC.Float                (float2Double)
+import qualified Graphics.Formats.STL     as STL
+import           System.CPUTime           (getCPUTime)
+import           System.Environment       (getArgs)
 import           System.IO
-import           System.Random.MWC          as MWC
-import           Text.Printf                (printf)
+import           System.Random.MWC        as MWC
+import           Text.Printf              (printf)
 
-import           Intersect
+import           BVHAccelerationStructure
 import           NaiveAccelerationStructure
+import           Intersect
 import           Object
 import           Scatter
 import           Triangle
 
 showTriangle (STL.Triangle norm verts) = "norm: " ++ (show norm) ++ ", verts: " ++ (show verts)
 
-source = CVec3 50 50 50
+source = CVec3 0 0 0
 _paraffin_ = MkMat { getSigmaScat = const 0.8, getSigmaTot = const 0.2, getName = "paraffin" }
 
 addToImage :: MutableImage s Pixel8 -> ((Int,Int),(Int,Int),(Int,Int)) -> (Int,Int,Int) -> CVec3 -> Pixel8 -> ST s ()
@@ -52,7 +53,7 @@ main = do
         toVecs (STL.Triangle _ (a,b,c)) = (toVec a, toVec b, toVec c)
         toVec (x,y,z) = fromXYZ (float2Double x, float2Double y, float2Double z)
         !mesh = map (tri . toVecs) tris
-        !bvh = construct mesh :: NaiveStructure Triangle
+        !bvh = construct mesh :: BVHStructure Triangle
         !obj = object (AnyIntersectable bvh) _paraffin_
         !scene = construct [obj] :: NaiveStructure Object
 
@@ -75,7 +76,7 @@ main = do
 
         stats <- emptyStats
         let simState = MkSimState gen adder stats
-        replicateM_ n $ simulate simState source (AnyIntersectableScene scene)
+        replicateM_ n $ simulate simState source (Just obj) (AnyIntersectableScene scene)
 
         frozenStats <- freezeStats stats
         frozenImg <- unsafeFreezeImage img
