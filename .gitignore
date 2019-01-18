@@ -4,6 +4,6 @@ NeutronScattering.cabal
 *.swp
 paths.obj
 *.png
-scene/
+slices/
 .stack-work-profile/
 .stack-work-profile-2/
