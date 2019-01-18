@@ -1,16 +1,20 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Triangle
     ( Triangle
     , tri
     ) where
 
 import           Data.Vec3
-import           Prelude   hiding (zipWith)
+import           Prelude               hiding (zipWith)
+import           Test.Tasty.QuickCheck (Arbitrary)
 
 import           AABB
 import           Intersect
 import           Ray
 
 newtype Triangle = MkTri (CVec3,CVec3,CVec3)
+    deriving (Arbitrary, Show)
 
 tri :: (CVec3,CVec3,CVec3) -> Triangle
 tri = MkTri

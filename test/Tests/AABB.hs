@@ -20,13 +20,13 @@ intersectsTests = testGroup "intersects" [unitTests, propertyTests]
 
 unitTests = testGroup "Unit Tests"
     [ testCase "Does not intersect" $
-        upRay `intersects` (MkAABB (CVec3 1 0 0) (CVec3 2 1 1)) @?= False
+        upRay `intersects` (aabb (CVec3 1 0 0) (CVec3 2 1 1)) @?= False
 
     , testCase "Inside AABB" $
-        upRay `intersects` (MkAABB (CVec3 (-1) (-1) (-1)) (CVec3 1 1 1)) @?= True
+        upRay `intersects` (aabb (CVec3 (-1) (-1) (-1)) (CVec3 1 1 1)) @?= True
 
     , testCase "Outside AABB" $
-        upRay `intersects` (MkAABB (CVec3 (-1) (-1) 1) (CVec3 1 1 2)) @?= True
+        upRay `intersects` (aabb (CVec3 (-1) (-1) 1) (CVec3 1 1 2)) @?= True
     ]
     where upRay = MkRay (CVec3 0 0 0) (CVec3 0 0 1)
 
@@ -65,10 +65,10 @@ propertyTests = testGroup "Property Tests"
         \(MkUnitVector dir) -> norm dir - 1 < 1e-5
 
     , QC.testProperty "All rays with origin (0,0,0) intersect an aabb with an all - min and all + max" $
-        \(MkUnitVector dir) (MkNegVec3 min) (MkPosVec3 max) -> MkRay (CVec3 0 0 0) dir `intersects` (MkAABB min max)
+        \(MkUnitVector dir) (MkNegVec3 min) (MkPosVec3 max) -> MkRay (CVec3 0 0 0) dir `intersects` (aabb min max)
 
     , QC.testProperty "All positive rays with origin (0,0,0) should not intersect an aabb with a - min and - max" $
-        \(MkPosVec3 dir) (MkNegVec3 b0) (MkNegVec3 b1) -> not $ MkRay (CVec3 0 0 0) dir `intersects` (MkAABB b0 b1)
+        \(MkPosVec3 dir) (MkNegVec3 b0) (MkNegVec3 b1) -> not $ MkRay (CVec3 0 0 0) dir `intersects` (aabb b0 b1)
     ]
 
 cAndUTests = testGroup "contains and union" [cAndUPropertyTests]
@@ -78,12 +78,12 @@ instance Arbitrary AABB where
     arbitrary = do
         MkNegVec3 min <- arbitrary
         MkPosVec3 max <- arbitrary
-        return $ MkAABB min max
+        return $ aabb min max
 
 cAndUPropertyTests = testGroup "Property Tests"
     [ QC.testProperty "if a contains b then b does not contain a" $
-        \b@(MkAABB min0 max0) (MkNegVec3 neg) (MkPosVec3 pos) -> let a = MkAABB (min0 <+> neg) (max0 <+> pos)
-                                                                 in a `contains` b == True && b `contains` a == False
+        \b (MkNegVec3 neg) (MkPosVec3 pos) -> let a = aabb (getMin b <+> neg) (getMax b <+> pos)
+                                              in a `contains` b == True && b `contains` a == False
 
     , QC.testProperty "a union contains both of its members" $
         \a b -> (union a b) `contains` a && (union a b) `contains` b
