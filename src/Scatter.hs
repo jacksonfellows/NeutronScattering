@@ -106,10 +106,10 @@ simulate' state@(MkSimState gen addToImage stats) n scene = do
         Nothing  -> (ray n) `intersectScene` scene
         Just obj -> (,) <$> (ray n) `intersectPrim` obj <*> return obj
 
-
-
-    -- get the collision based on the intersection and the material
-    let mat = getMat obj
+    -- get the collision based on the CURRENT intersection and the material
+    let mat = case inside n of
+            Just obj -> getMat obj
+            Nothing  -> _air_
         sigmaScat = getSigmaScat mat 1
         sigmaTot = getSigmaTot mat 1
 
