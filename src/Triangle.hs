@@ -3,6 +3,7 @@
 module Triangle
     ( Triangle
     , tri
+    , (<++>)
     ) where
 
 import           Data.Vec3
@@ -18,6 +19,9 @@ newtype Triangle = MkTri (CVec3,CVec3,CVec3)
 
 tri :: (CVec3,CVec3,CVec3) -> Triangle
 tri = MkTri
+
+(<++>) :: Triangle -> CVec3 -> Triangle
+MkTri (a, b, c) <++> offset = tri (a <+> offset, b <+> offset, c <+> offset)
 
 instance IntersectionPrim Triangle where
     -- moller-trumbore algorithm (copied from internet)

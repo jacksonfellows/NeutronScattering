@@ -10,6 +10,7 @@ module Intersect
      , buildAABBAny
      , getCentroidAny
      , intersectScene
+     , buildAABBScene
      , IntersectionPrim(..)
      , AccelerationStructure(..)
      ) where
@@ -27,6 +28,7 @@ buildAABBAny (AnyIntersectable i) = buildAABBPrim i
 getCentroidAny (AnyIntersectable i) = getCentroidPrim i
 
 ray `intersectScene` (AnyIntersectableScene s) = ray `intersect` s
+buildAABBScene (AnyIntersectableScene s) = buildAABB s
 
 class IntersectionPrim a where
     intersectPrim :: Ray -> a -> Maybe Double

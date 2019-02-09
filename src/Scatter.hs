@@ -24,6 +24,7 @@ import           System.Random.MWC         as MWC
 import           Intersect
 import           Object
 import           Ray
+import Slices
 
 _air_ = MkMat { getSigmaScat = const 0, getSigmaTot = const 0, getName = "air" }
 
@@ -42,7 +43,7 @@ randomDir gen = do
 
 data SimState s = MkSimState
     { getGen   :: MWC.GenST s
-    , getAdder :: CVec3 -> Pixel8 -> ST s ()
+    , getAdder :: Adder s
     , getStats :: Stats s
     }
 

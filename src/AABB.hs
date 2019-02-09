@@ -11,6 +11,7 @@ module AABB
     , union
     , contains
     , containsPoint
+    , midpoint
     ) where
 
 import           Data.Vec3
@@ -54,3 +55,6 @@ a `contains` b = a == union a b
 containsPoint :: AABB -> CVec3 -> Bool
 (MkAABB (CVec3 minX minY minZ) (CVec3 maxX maxY maxZ)) `containsPoint` (CVec3 x y z) =
     minX < x && x < maxX && minY < y && y < maxY && minZ < z && z < maxZ
+
+midpoint :: AABB -> CVec3
+midpoint (MkAABB min max) = (min <+> max) .^ (1/2)
