@@ -1,7 +1,7 @@
 module Ray
     ( Ray(..) ) where
 
-import Data.Vec3
+import           Data.Vec3
 
 data Ray = MkRay
     { getO, getDir :: CVec3 }
