@@ -12,8 +12,6 @@ module Scatter
     , FrozenStats(..)
     ) where
 
-import           Codec.Picture.Types
-import           Control.Applicative
 import           Control.Monad.ST
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
@@ -26,6 +24,7 @@ import           Object
 import           Ray
 import Slices
 
+_air_ :: Material
 _air_ = MkMat { getSigmaScat = const 0, getSigmaTot = const 0, getName = "air" }
 
 data Neutron = MkNeutron
@@ -109,7 +108,7 @@ simulate' state@(MkSimState gen addToImage stats) n scene = do
 
     -- get the collision based on the CURRENT intersection and the material
     let mat = case inside n of
-            Just obj -> getMat obj
+            Just o -> getMat o
             Nothing  -> _air_
         sigmaScat = getSigmaScat mat 1
         sigmaTot = getSigmaTot mat 1

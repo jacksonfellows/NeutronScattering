@@ -3,8 +3,6 @@
 module Main where
 
 import           Control.Monad      (replicateM_)
-import           Control.Monad.ST
-import           Data.STRef
 import           Data.Vec3
 import           System.CPUTime     (getCPUTime)
 import           System.Environment (getArgs)
