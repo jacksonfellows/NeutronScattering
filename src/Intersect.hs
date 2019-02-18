@@ -16,7 +16,7 @@ module Intersect
      ) where
 
 import           AABB
-import           Data.Vec3
+import           Linear.V3
 import           Ray
 
 -- some "boxes" to represent any intersection primitive and any acceleration structure
@@ -33,7 +33,7 @@ buildAABBScene (AnyIntersectableScene s) = buildAABB s
 class IntersectionPrim a where
     intersectPrim :: Ray -> a -> Maybe Double
     buildAABBPrim :: a -> AABB
-    getCentroidPrim :: a -> CVec3
+    getCentroidPrim :: a -> V3 Double
 
 class IntersectionPrim i => AccelerationStructure a i where
     intersect :: Ray -> a i -> Maybe (Double, i)
@@ -43,4 +43,4 @@ class IntersectionPrim i => AccelerationStructure a i where
 instance (IntersectionPrim i, AccelerationStructure a i) => IntersectionPrim (a i) where
     intersectPrim ray struct = fst <$> intersect ray struct
     buildAABBPrim = buildAABB
-    getCentroidPrim struct = let box = buildAABB struct in (getMin box <+> getMax box) .^ (1/2)
+    getCentroidPrim struct = let box = buildAABB struct in midpoint box

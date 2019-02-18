@@ -10,10 +10,10 @@ import           Data.Attoparsec.Text
 import           Data.Maybe                 (fromJust)
 import           Data.Text                  hiding (map)
 import           Data.Text.IO               (readFile)
-import           Data.Vec3
 import           GHC.Float                  (float2Double)
 import           GHC.Generics
 import qualified Graphics.Formats.STL       as STL
+import           Linear.V3
 import           Prelude                    hiding (readFile)
 
 import           BVHAccelerationStructure
@@ -44,7 +44,7 @@ parseScene sceneFile = do
 
 toTri :: STL.Triangle -> Triangle
 toTri (STL.Triangle _ (a,b,c)) = tri (toVec a, toVec b, toVec c)
-    where toVec (x,y,z) = fromXYZ (float2Double x, float2Double y, float2Double z)
+    where toVec (x,y,z) = V3 (float2Double x) (float2Double y) (float2Double z)
 
 getTris :: Text -> [Triangle]
 getTris stlFile = tris
@@ -52,15 +52,15 @@ getTris stlFile = tris
           Right stlTris = fmap STL.triangles res
           tris = map toTri stlTris
 
-toVec3 :: [Double] -> CVec3
-toVec3 [x,y,z] = CVec3 x y z
-toVec3 invalid = error $ "invalid vec3: " ++ show invalid
+toV3 :: [Double] -> V3 Double
+toV3 [x,y,z] = V3 x y z
+toV3 invalid = error $ "invalid vec3: " ++ show invalid
 
 meshToObj :: Mesh -> IO Object
 meshToObj MkMesh {..} = do
     stlFile <- readFile file
     let !tris = getTris stlFile
-        !offsetVec = toVec3 offset
+        !offsetVec = toV3 offset
         !newTris = map (<++> offsetVec) tris
         !bvh = construct newTris :: BVHStructure Triangle
         !obj = object (AnyIntersectable bvh) _paraffin_

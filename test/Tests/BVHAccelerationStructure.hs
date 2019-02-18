@@ -1,6 +1,6 @@
 module Tests.BVHAccelerationStructure ( tests ) where
 
-import           Data.Vec3
+import           Linear.V3
 import           Test.Tasty
 import           Test.Tasty.QuickCheck      as QC
 
@@ -30,10 +30,10 @@ propertyTests = testGroup "Property Tests"
 
 raysInBox :: AABB -> Gen Ray
 raysInBox box = do
-    let (minX,minY,minZ) = toXYZ $ getMin box
-        (maxX,maxY,maxZ) = toXYZ $ getMax box
+    let (V3 minX minY minZ) = getMin box
+        (V3 maxX maxY maxZ) = getMax box
     x <- choose (minX,maxX)
     y <- choose (minY,maxY)
     z <- choose (minZ,maxZ)
     (MkUnitVector dir) <- arbitrary
-    return $ MkRay (CVec3 x y z) dir
+    return $ buildRay (V3 x y z) dir

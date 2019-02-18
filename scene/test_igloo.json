@@ -1,6 +1,6 @@
 [
 	{
-		"file": "scene/test2.stl",
-		"offset": [ 0, 0, 0 ]
+		"file": "scene/sphere.stl",
+		"offset": [ 10, 10, 10 ]
 	}
 ]

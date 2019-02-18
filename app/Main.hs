@@ -3,7 +3,7 @@
 module Main where
 
 import           Control.Monad      (replicateM_)
-import           Data.Vec3
+import           Linear.V3
 import           System.CPUTime     (getCPUTime)
 import           System.Environment (getArgs)
 import           System.IO
@@ -27,15 +27,14 @@ main = do
     putStrLn "loading scene..."
     !scene <- parseScene sceneFile
     let sceneAABB = buildAABBScene scene `union` (aabb source source)
-        source = CVec3 0 0 0 -- midpoint sceneAABB
+        source = V3 0 0 0 -- midpoint sceneAABB
 
         -- (minX,maxX) = (-100,100)
         -- (minY,maxY) = (-100,100)
         -- (minZ,maxZ) = (-100,100)
 
-        floored (x,y,z) = (floor x,floor y,floor z)
-        (minX,minY,minZ) = floored $ toXYZ $ getMin sceneAABB
-        (maxX,maxY,maxZ) = floored $ toXYZ $ getMax sceneAABB
+        (V3 minX minY minZ) = fmap floor $ getMin sceneAABB
+        (V3 maxX maxY maxZ) = fmap floor $ getMax sceneAABB
 
         width = maxX - minX
         height = maxY - minY

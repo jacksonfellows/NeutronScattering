@@ -1,9 +1,11 @@
 module Ray
-    ( Ray(..) ) where
+    ( buildRay, Ray(..) ) where
 
-import           Data.Vec3
+import           Linear.V3
 
-data Ray = MkRay
-    { getO, getDir :: CVec3 }
+buildRay :: V3 Double -> V3 Double -> Ray
+buildRay o dir = MkRay o dir (1 / dir)
+
+data Ray = MkRay { getO, getDir, getInvDir :: !(V3 Double) }
     deriving (Show)
 

@@ -7,8 +7,8 @@ module BVHAccelerationStructure where
 
 import           Control.Applicative ((<|>))
 import           Data.List           (foldl', foldl1')
-import           Data.Vec3
 import qualified Data.Vector         as V
+import           Linear.V3
 import           Prelude             hiding (zipWith)
 
 import           AABB
@@ -28,7 +28,7 @@ getAABBs :: IntersectionPrim i => V.Vector i -> (AABB, V.Vector AABB)
 getAABBs !prims = (V.foldl1' union aabbs, aabbs)
     where aabbs = V.map buildAABBPrim prims
 
-getCentroids :: IntersectionPrim i => V.Vector i -> V.Vector CVec3
+getCentroids :: IntersectionPrim i => V.Vector i -> V.Vector (V3 Double)
 getCentroids = V.map getCentroidPrim
 
 data Octree = OctreeDummy !AABB
@@ -47,28 +47,28 @@ createEmptyTree aabb = OctreeNode aabb $ map OctreeDummy $ octSplitAABB aabb
 octSplitAABB :: AABB -> [AABB]
 octSplitAABB box =
 
-    [ aabb (CVec3 minX minY minZ) (CVec3 centerX centerY centerZ)
-    , aabb (CVec3 centerX minY minZ) (CVec3 maxX centerY centerZ)
-    , aabb (CVec3 minX centerY minZ) (CVec3 centerX maxY centerZ)
-    , aabb (CVec3 centerX centerY minZ) (CVec3 maxX maxY centerZ)
+    [ aabb (V3 minX minY minZ) (V3 centerX centerY centerZ)
+    , aabb (V3 centerX minY minZ) (V3 maxX centerY centerZ)
+    , aabb (V3 minX centerY minZ) (V3 centerX maxY centerZ)
+    , aabb (V3 centerX centerY minZ) (V3 maxX maxY centerZ)
 
-    , aabb (CVec3 minX minY centerZ) (CVec3 centerX centerY maxZ)
-    , aabb (CVec3 centerX minY centerZ) (CVec3 maxX centerY maxZ)
-    , aabb (CVec3 minX centerY centerZ) (CVec3 centerX maxY maxZ)
-    , aabb (CVec3 centerX centerY centerZ) (CVec3 maxX maxY maxZ) ]
+    , aabb (V3 minX minY centerZ) (V3 centerX centerY maxZ)
+    , aabb (V3 centerX minY centerZ) (V3 maxX centerY maxZ)
+    , aabb (V3 minX centerY centerZ) (V3 centerX maxY maxZ)
+    , aabb (V3 centerX centerY centerZ) (V3 maxX maxY maxZ) ]
 
     where centerX = (minX + maxX) / 2
           centerY = (minY + maxY) / 2
           centerZ = (minZ + maxZ) / 2
-          (CVec3 minX minY minZ) = getMin box
-          (CVec3 maxX maxY maxZ) = getMax box
+          (V3 minX minY minZ) = getMin box
+          (V3 maxX maxY maxZ) = getMax box
 
 maxDepth = 16 :: Int
 
-insert :: Octree -> Int -> V.Vector CVec3 -> Octree
+insert :: Octree -> Int -> V.Vector (V3 Double) -> Octree
 insert tree i centroids = insert' tree i centroids 0
 
-insert' :: Octree -> Int -> V.Vector CVec3 -> Int -> Octree
+insert' :: Octree -> Int -> V.Vector (V3 Double) -> Int -> Octree
 insert' (OctreeNode !aabb !children) i centroids depth = OctreeNode aabb newChildren
     where newChildren = map (\child -> if (getAABB child) `containsPoint` (centroids V.! i)
                                        then insert' child i centroids (depth+1)

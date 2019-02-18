@@ -16,13 +16,13 @@ import           Control.Monad.ST
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
 import           Data.STRef
-import           Data.Vec3
+import           Linear.V3
 import           System.Random.MWC         as MWC
 
 import           Intersect
 import           Object
 import           Ray
-import Slices
+import           Slices
 
 _air_ :: Material
 _air_ = MkMat { getSigmaScat = const 0, getSigmaTot = const 0, getName = "air" }
@@ -32,13 +32,13 @@ data Neutron = MkNeutron
     , inside :: Maybe Object
     } deriving (Show)
 
-randomDir :: MWC.GenST s -> ST s CVec3
+randomDir :: MWC.GenST s -> ST s (V3 Double)
 randomDir gen = do
     r0 <- MWC.uniform gen
     r1 <- MWC.uniform gen
     let theta = r0 * 2 * pi
         phi = acos $ r1 * 2 - 1
-    return $ CVec3 (cos theta * sin phi) (sin theta * sin phi) (cos phi)
+    return $ V3 (cos theta * sin phi) (sin theta * sin phi) (cos phi)
 
 data SimState s = MkSimState
     { getGen   :: MWC.GenST s
@@ -70,7 +70,7 @@ freezeStats MkStats {..} = do
 
 -- assuming that we are starting outside of all the objects in the scene
 simulate :: SimState s
-         -> CVec3 -- source
+         -> V3 Double -- source
          -> Maybe Object -- object the neutron starts inside
          -> IntersectableScene Object -- scene
          -> ST s () -- updates to the image
@@ -81,15 +81,15 @@ simulate state@(MkSimState gen _ _) source initialInside scene = do
     -- I'm not implementing this right now because we might not need it
     -- For the bunny tests that I am doing, we always start inside the bunny,
     -- which is the only item in the scene
-    let n = MkNeutron {ray = MkRay source dir, inside = initialInside}
+    let n = MkNeutron {ray = buildRay source dir, inside = initialInside}
 
     -- TODO: ugly
     _ <- runMaybeT $ simulate' state n scene
     return ()
 
 -- ugly helper
-pointOnRay :: Ray -> Double -> CVec3
-pointOnRay (MkRay o d) n = o <+> (d .^ n)
+pointOnRay :: Ray -> Double -> V3 Double
+pointOnRay (MkRay o d _) n = o - (d * (pure n))
 
 -- the neutron can start anywhere
 simulate' :: SimState s
@@ -108,8 +108,8 @@ simulate' state@(MkSimState gen addToImage stats) n scene = do
 
     -- get the collision based on the CURRENT intersection and the material
     let mat = case inside n of
-            Just o -> getMat o
-            Nothing  -> _air_
+            Just o  -> getMat o
+            Nothing -> _air_
         sigmaScat = getSigmaScat mat 1
         sigmaTot = getSigmaTot mat 1
 
@@ -129,7 +129,7 @@ simulate' state@(MkSimState gen addToImage stats) n scene = do
             lift $ addToImage colPoint 25 -- TODO: actual intensity
 
             newDir <- lift $ randomDir gen -- TODO: actual new direction
-            let newN = MkNeutron {ray = MkRay colPoint newDir, inside = (inside n)}
+            let newN = MkNeutron {ray = buildRay colPoint newDir, inside = (inside n)}
 
             simulate' state newN scene
         -- absorbed
@@ -140,5 +140,5 @@ simulate' state@(MkSimState gen addToImage stats) n scene = do
     else do
         -- TODO: replace with global epsilon?
         let newP = pointOnRay (ray n) (dist + 1e-3)
-            newN = MkNeutron {ray = MkRay (newP) (getDir (ray n)), inside = Just obj}
+            newN = MkNeutron {ray = buildRay (newP) (getDir (ray n)), inside = Just obj}
         simulate' state newN scene

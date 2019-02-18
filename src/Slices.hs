@@ -12,17 +12,18 @@ import           Codec.Picture.Types
 import           Control.Monad        (when)
 import           Control.Monad.ST
 import qualified Data.Vector.Storable as V
+import           Linear.V3
 import           Text.Printf          (printf)
 
 import           AABB
-import           Data.Vec3
 
 type Val = Pixel8
-type Adder s = CVec3 -> Val -> ST s ()
+type Adder s = V3 Double -> Val -> ST s ()
 data Slices s = MkSlices AABB (MutableImage s Val)
 
+toXYZ (V3 x y z) = (x,y,z)
 floored (x,y,z) = (floor x,floor y,floor z)
-getDims box = floored $ toXYZ $ getMax box <-> getMin box
+getDims box = floored $ toXYZ $ getMax box - getMin box
 
 initFromAABB :: AABB -> ST s (Slices s)
 initFromAABB box = do

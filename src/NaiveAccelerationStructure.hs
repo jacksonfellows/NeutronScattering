@@ -7,7 +7,6 @@ module NaiveAccelerationStructure
     ) where
 
 import           Control.Applicative ((<|>))
-import           Data.Vec3
 import qualified Data.Vector         as V
 import           Prelude             hiding (zipWith)
 
