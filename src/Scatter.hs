@@ -68,13 +68,17 @@ freezeStats MkStats {..} = do
     absorbed <- readSTRef numAbsorbedRef
     return $ MkFrozenStats scattered absorbed
 
+-- ugly helper
+pointOnRay :: Ray -> Double -> V3 Double
+pointOnRay (MkRay o d _) n = o - (d * (pure n))
+
 -- assuming that we are starting outside of all the objects in the scene
 simulate :: SimState s
          -> V3 Double -- source
          -> Maybe Object -- object the neutron starts inside
          -> IntersectableScene Object -- scene
          -> ST s () -- updates to the image
-simulate state@(MkSimState gen _ _) source initialInside scene = do
+simulate state@(MkSimState gen addToImage stats) source initialInside scene = do
     dir <- randomDir gen
     -- let n = MkNeutron {ray = MkRay source dir, inside = Nothing}
     -- TODO: check if we are inside an object
@@ -84,61 +88,48 @@ simulate state@(MkSimState gen _ _) source initialInside scene = do
     let n = MkNeutron {ray = buildRay source dir, inside = initialInside}
 
     -- TODO: ugly
-    _ <- runMaybeT $ simulate' state n scene
+    _ <- runMaybeT $ go state n scene
     return ()
+    where go state n scene = do
+              -- the neutron can start anywhere
+              -- find the intersection and object intersected
+              (dist,obj) <- MaybeT . return $ case inside n of
+                  Nothing  -> (ray n) `intersectScene` scene
+                  Just obj -> (,) <$> (ray n) `intersectPrim` obj <*> return obj
 
--- ugly helper
-pointOnRay :: Ray -> Double -> V3 Double
-pointOnRay (MkRay o d _) n = o - (d * (pure n))
+              -- get the collision based on the CURRENT intersection and the material
+              let mat = case inside n of
+                      Just o  -> getMat o
+                      Nothing -> _air_
+                  sigmaScat = getSigmaScat mat 1
+                  sigmaTot = getSigmaTot mat 1
 
--- the neutron can start anywhere
-simulate' :: SimState s
-          -> Neutron -- neutron
-          -> IntersectableScene Object -- scene
-          -> MaybeT (ST s) () -- (possible) updates to the image
-simulate' state@(MkSimState gen addToImage stats) n scene = do
-    -- find the intersection and object intersected
-    -- let (intPair,tests,ints) = intersectScene n scene
-    -- lift $ incNumTests stats tests
-    -- lift $ incNumInts stats ints
+              r0 <- uniform gen
+              let distanceCovered = -(1 / sigmaTot) * log r0
 
-    (dist,obj) <- MaybeT . return $ case inside n of
-        Nothing  -> (ray n) `intersectScene` scene
-        Just obj -> (,) <$> (ray n) `intersectPrim` obj <*> return obj
+              if distanceCovered < dist
+              -- there was a collision
+              then do
+                  let colPoint = pointOnRay (ray n) distanceCovered
+                  r1 <- uniform gen
 
-    -- get the collision based on the CURRENT intersection and the material
-    let mat = case inside n of
-            Just o  -> getMat o
-            Nothing -> _air_
-        sigmaScat = getSigmaScat mat 1
-        sigmaTot = getSigmaTot mat 1
+                  if (sigmaScat / sigmaTot) > r1
+                  -- scattering
+                  then do
+                      lift $ incNumScattered stats
+                      lift $ addToImage colPoint 25 -- TODO: actual intensity
 
-    r0 <- uniform gen
-    let distanceCovered = -(1 / sigmaTot) * log r0
+                      newDir <- lift $ randomDir gen -- TODO: actual new direction
+                      let newN = MkNeutron {ray = buildRay colPoint newDir, inside = (inside n)}
 
-    if distanceCovered < dist
-    -- there was a collision
-    then do
-        let colPoint = pointOnRay (ray n) distanceCovered
-        r1 <- uniform gen
-
-        if (sigmaScat / sigmaTot) > r1
-        -- scattering
-        then do
-            lift $ incNumScattered stats
-            lift $ addToImage colPoint 25 -- TODO: actual intensity
-
-            newDir <- lift $ randomDir gen -- TODO: actual new direction
-            let newN = MkNeutron {ray = buildRay colPoint newDir, inside = (inside n)}
-
-            simulate' state newN scene
-        -- absorbed
-        else do
-            lift $ incNumAbsorbed stats
-            lift $ addToImage colPoint 25 -- TODO: actual intensity
-    -- move into next object
-    else do
-        -- TODO: replace with global epsilon?
-        let newP = pointOnRay (ray n) (dist + 1e-3)
-            newN = MkNeutron {ray = buildRay (newP) (getDir (ray n)), inside = Just obj}
-        simulate' state newN scene
+                      go state newN scene
+                  -- absorbed
+                  else do
+                      lift $ incNumAbsorbed stats
+                      lift $ addToImage colPoint 25 -- TODO: actual intensity
+              -- move into next object
+              else do
+                  -- TODO: replace with global epsilon?
+                  let newP = pointOnRay (ray n) (dist + 1e-3)
+                      newN = MkNeutron {ray = buildRay (newP) (getDir (ray n)), inside = Just obj}
+                  go state newN scene
