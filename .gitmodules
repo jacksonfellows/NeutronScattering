@@ -1,0 +1,6 @@
+[submodule "github-versions/GPipe-Core"]
+	path = github-versions/GPipe-Core
+	url = git@github.com:tobbebex/GPipe-Core.git
+[submodule "github-versions/GPipe-GLFW"]
+	path = github-versions/GPipe-GLFW
+	url = git@github.com:plredmond/GPipe-GLFW.git
