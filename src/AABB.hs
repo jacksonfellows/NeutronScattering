@@ -8,6 +8,7 @@ module AABB
     , getMin
     , getMax
     , intersects
+    , intersectTs
     , union
     , contains
     , containsPoint
@@ -34,7 +35,11 @@ derivingUnbox "AABB"
     [| \ (minBounds, maxBounds) -> MkAABB minBounds maxBounds |]
 
 intersects :: Ray -> AABB -> Bool
-(MkRay o _ inv) `intersects` (MkAABB b0 b1) = tmax >= tmin && (tmax > 0 || tmin > 0)
+intersects ray box = tmax >= tmin && (tmax > 0 || tmin > 0)
+    where (tmin,tmax) = intersectTs ray box
+
+intersectTs :: Ray -> AABB -> (Double, Double)
+(MkRay o _ inv) `intersectTs` (MkAABB b0 b1) = (tmin,tmax)
     where mins = (b0 - o) * inv
           maxs = (b1 - o) * inv
           tmin = maximum $ mzipWith min mins maxs
