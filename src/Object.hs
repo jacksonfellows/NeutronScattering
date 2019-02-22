@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
  -- TODO: don't export constructor
  module Object
     ( Object(..)
@@ -7,20 +10,20 @@
 
 import           Intersect
 
-data Object = MkObject
-    { getShape :: Intersectable
+data Object n = MkObject
+    { getShape :: Intersectable n
     , getMat   :: Material
     }
 
-object :: Intersectable -> Material -> Object
+object :: Intersectable n -> Material -> Object n
 object = MkObject
 
-instance IntersectionPrim Object where
+instance IntersectionPrim Object n where
     intersectPrim ray obj = intersectAny ray $ getShape obj
     buildAABBPrim obj = buildAABBAny $ getShape obj
     getCentroidPrim obj = getCentroidAny $ getShape obj
 
-instance Show Object where show (MkObject _ m) = show m
+instance Show (Object n) where show (MkObject _ m) = show m
 
 -- ugly hack to allow me to sort (Intersection,Object) pairs
 -- a runtime error will be thrown if it two objects are actually compared

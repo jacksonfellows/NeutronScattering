@@ -9,6 +9,7 @@ import           BVHAccelerationStructure
 import           Intersect
 import           NaiveAccelerationStructure
 import           Ray
+import           System.Random              (Random)
 import           Tests.AABB                 (UnitVector (..))
 import           Triangle
 
@@ -17,18 +18,18 @@ tests = testGroup "BVH" [propertyTests]
 
 propertyTests = testGroup "Property Tests"
     [ QC.testProperty "All BVH nodes contain their children, and all BVH leafs contain their prims" $
-        \(NonEmpty prims) -> let bvh = construct prims :: BVHStructure Triangle
+        \(NonEmpty prims) -> let bvh = construct prims :: BVHStructure Triangle Double
                              in nodesContainChildren bvh
 
     , QC.testProperty "The same behavior as a naive implementation" $
-        \(NonEmpty prims) -> let bvh = construct prims :: BVHStructure Triangle
-                                 naive = construct prims :: NaiveStructure Triangle
+        \(NonEmpty prims) -> let bvh = construct prims :: BVHStructure Triangle Double
+                                 naive = construct prims :: NaiveStructure Triangle Double
                                  box = buildAABB bvh
                              in QC.forAll (raysInBox box) $
                                 \ray -> fmap fst (intersect ray bvh) == fmap fst (intersect ray naive)
     ]
 
-raysInBox :: AABB -> Gen Ray
+raysInBox :: (Arbitrary n, Random n, Floating n) => AABB n -> Gen (Ray n)
 raysInBox box = do
     let (V3 minX minY minZ) = getMin box
         (V3 maxX maxY maxZ) = getMax box

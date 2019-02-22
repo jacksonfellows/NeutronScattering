@@ -14,9 +14,9 @@ import           AABB
 import           Intersect
 import           Ray
 
-newtype NaiveStructure i = MkN (V.Vector i)
+newtype NaiveStructure i n = MkN (V.Vector (i n))
 
-instance IntersectionPrim i => AccelerationStructure NaiveStructure i where
+instance IntersectionPrim i n => AccelerationStructure NaiveStructure i n where
     (!ray) `intersect` (MkN !prims) = V.foldl1' maybeMinOnFst $ V.map
         (\p -> (,) <$> ray `intersectPrim` p <*> return p) prims
         where maybeMinOnFst a b = minFst <$> a <*> b <|> a <|> b

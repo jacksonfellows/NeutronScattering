@@ -27,12 +27,12 @@ import           Slices
 _air_ :: Material
 _air_ = MkMat { getSigmaScat = const 0, getSigmaTot = const 0, getName = "air" }
 
-data Neutron = MkNeutron
-    { ray    :: Ray
-    , inside :: Maybe Object
+data Neutron n = MkNeutron
+    { ray    :: Ray n
+    , inside :: Maybe (Object n)
     } deriving (Show)
 
-randomDir :: MWC.GenST s -> ST s (V3 Double)
+randomDir :: (Floating n, Variate n) => MWC.GenST s -> ST s (V3 n)
 randomDir gen = do
     r0 <- MWC.uniform gen
     r1 <- MWC.uniform gen
@@ -40,9 +40,9 @@ randomDir gen = do
         phi = acos $ r1 * 2 - 1
     return $ V3 (cos theta * sin phi) (sin theta * sin phi) (cos phi)
 
-data SimState s = MkSimState
+data SimState n s = MkSimState
     { getGen   :: MWC.GenST s
-    , getAdder :: Adder s
+    , getAdder :: Adder n s
     , getStats :: Stats s
     }
 
@@ -69,14 +69,15 @@ freezeStats MkStats {..} = do
     return $ MkFrozenStats scattered absorbed
 
 -- ugly helper
-pointOnRay :: Ray -> Double -> V3 Double
+pointOnRay :: Num n => Ray n -> n -> V3 n
 pointOnRay (MkRay o d _) n = o - (d * (pure n))
 
+-- TODO: actually make this work for number types outside of Double?
 -- assuming that we are starting outside of all the objects in the scene
-simulate :: SimState s
+simulate :: SimState Double s
          -> V3 Double -- source
-         -> Maybe Object -- object the neutron starts inside
-         -> IntersectableScene Object -- scene
+         -> Maybe (Object Double) -- object the neutron starts inside
+         -> IntersectableScene Double Object -- scene
          -> ST s () -- updates to the image
 simulate state@(MkSimState gen addToImage stats) source initialInside scene = do
     dir <- randomDir gen

@@ -30,20 +30,20 @@ import           AABB
 import           Ray
 
 type Val = Pixel8
-type Adder s = V3 Double -> Val -> ST s ()
-data Slices s = MkSlices AABB (MutableImage s Val)
+type Adder n s = V3 n -> Val -> ST s ()
+data Slices n s = MkSlices (AABB n) (MutableImage s Val)
 
 toXYZ (V3 x y z) = (x,y,z)
 floored (x,y,z) = (floor x,floor y,floor z)
 getDims box = floored $ toXYZ $ getMax box - getMin box
 
-initFromAABB :: AABB -> ST s (Slices s)
+initFromAABB :: RealFrac n => AABB n -> ST s (Slices n s)
 initFromAABB box = do
     img <- createMutableImage width (height * depth) 0
     return $ MkSlices box img
     where (width,height,depth) = getDims box
 
-addToSlices :: Slices s -> Adder s
+addToSlices :: (Ord n, RealFrac n) => Slices n s -> Adder n s
 addToSlices (MkSlices box img) pos val = when (box `containsPoint` pos) $
     writePixel img (x - minX) (y - minY + (z - minZ) * depth) val
     where (x,y,z) = floored $ toXYZ pos
@@ -51,7 +51,7 @@ addToSlices (MkSlices box img) pos val = when (box `containsPoint` pos) $
           (minX,minY,minZ) = floored $ toXYZ $ getMin box
 
 -- cut this big image into slices that can be used by slicer
-freezeAndSlice :: Slices s -> ST s [Codec.Picture.Types.Image Val]
+freezeAndSlice :: RealFrac n => Slices n s -> ST s [Codec.Picture.Types.Image Val]
 freezeAndSlice (MkSlices box img) = do
     frozen <- unsafeFreezeImage img
     let dat = imageData frozen

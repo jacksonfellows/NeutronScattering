@@ -1,4 +1,6 @@
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
 
 module Triangle
     ( Triangle
@@ -17,16 +19,15 @@ import           ArbitraryHelpers
 import           Intersect
 import           Ray
 
-newtype Triangle = MkTri (V3 Double,V3 Double,V3 Double)
+newtype Triangle n = MkTri (V3 n,V3 n,V3 n)
     deriving (Arbitrary, Show)
 
-tri :: (V3 Double,V3 Double,V3 Double) -> Triangle
 tri = MkTri
 
-(<++>) :: Triangle -> V3 Double -> Triangle
+(<++>) :: Num n => Triangle n -> V3 n -> Triangle n
 MkTri (a, b, c) <++> offset = tri (a + offset, b + offset, c + offset)
 
-instance IntersectionPrim Triangle where
+instance IntersectionPrim Triangle n where
     -- moller-trumbore algorithm (copied from internet)
     -- TODO: make it more haskelly (or, make it less haskelly be removing Maybe?)
     -- TODO: for now, no culling -> make this dependent on whether I'm inside or outside an object?

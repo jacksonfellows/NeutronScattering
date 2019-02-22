@@ -36,17 +36,17 @@ _paraffin_ = MkMat { getSigmaScat = const 0, getSigmaTot = const 1, getName = "p
 
 -- parse scene description files, read and shift the relevant meshes
 -- and return an IntersectableScene Object
-parseScene :: FilePath -> IO (IntersectableScene Object)
+parseScene :: FilePath -> IO (IntersectableScene Double Object)
 parseScene sceneFile = do
     meshes :: [Mesh] <- decodeFileStrict sceneFile >>= return . fromJust
     objs <- mapM meshToObj meshes
-    return $ AnyIntersectableScene (construct objs :: NaiveStructure Object)
+    return $ AnyIntersectableScene (construct objs :: NaiveStructure Object Double)
 
-toTri :: STL.Triangle -> Triangle
+toTri :: STL.Triangle -> Triangle Double
 toTri (STL.Triangle _ (a,b,c)) = tri (toVec a, toVec b, toVec c)
     where toVec (x,y,z) = V3 (float2Double x) (float2Double y) (float2Double z)
 
-getTris :: Text -> [Triangle]
+getTris :: Text -> [Triangle Double]
 getTris stlFile = tris
     where res = parseOnly STL.stlParser stlFile
           Right stlTris = fmap STL.triangles res
@@ -56,12 +56,12 @@ toV3 :: [Double] -> V3 Double
 toV3 [x,y,z] = V3 x y z
 toV3 invalid = error $ "invalid vec3: " ++ show invalid
 
-meshToObj :: Mesh -> IO Object
+meshToObj :: Mesh -> IO (Object Double)
 meshToObj MkMesh {..} = do
     stlFile <- readFile file
     let !tris = getTris stlFile
         !offsetVec = toV3 offset
         !newTris = map (<++> offsetVec) tris
-        !bvh = construct newTris :: BVHStructure Triangle
+        !bvh = construct newTris :: BVHStructure Triangle Double
         !obj = object (AnyIntersectable bvh) _paraffin_
     return obj
